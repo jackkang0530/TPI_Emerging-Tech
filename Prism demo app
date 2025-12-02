@@ -1,0 +1,718 @@
+import React, { useState, useEffect } from 'react';
+import { Home, Globe, Bookmark, User, ChevronRight, ChevronDown, ChevronUp, X, Check, AlertTriangle, Clock, TrendingUp, Shield, Award, Flame, Target, BookOpen, ArrowLeft, ExternalLink } from 'lucide-react';
+
+// Demo Data based on UnitedHealthcare CEO Event
+const demoData = {
+  event: {
+    id: "uhc-ceo-shooting-2024",
+    title: "UnitedHealthcare CEO Brian Thompson Shooting",
+    summary: "Brian Thompson, 50-year-old CEO of UnitedHealthcare, was shot and killed on December 4, 2024, outside the New York Hilton Midtown hotel. The suspect, Luigi Mangione (26), was arrested five days later.",
+    status: "ongoing",
+    categories: ["Crime", "Healthcare", "Corporate America"],
+    date: "Dec 4, 2024",
+    stats: { sources: 47, factChecks: 8, bookmarks: 12847 },
+    image: "https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?w=400&h=300&fit=crop"
+  },
+  chapters: [
+    {
+      id: "ch1", title: "The Shooting", date: "Dec 4, 2024", status: "resolved",
+      events: [
+        { id: "ev1-1", title: "Initial Incident", time: "6:45 AM", summary: "Thompson shot twice outside New York Hilton Midtown. Gunman fled on e-bike." },
+        { id: "ev1-2", title: "Corporate Response", time: "8:00 AM", summary: "UnitedHealth cancels investor conference. Stock rises 1%." },
+        { id: "ev1-3", title: "NYPD Press Conference", time: "12:00 PM", summary: "Commissioner announces 'premeditated attack'. $10K reward." }
+      ]
+    },
+    {
+      id: "ch2", title: "The Manhunt", date: "Dec 5-8, 2024", status: "resolved",
+      events: [
+        { id: "ev2-1", title: "Suspect Images Released", time: "Dec 5", summary: "NYPD releases surveillance images from hostel." },
+        { id: "ev2-2", title: "FBI Joins Investigation", time: "Dec 6", summary: "Reward increased to $60,000 total." },
+        { id: "ev2-3", title: "Social Media Reaction", time: "Dec 5-8", summary: "100K+ 'Haha' reactions on UnitedHealth's Facebook post." }
+      ]
+    },
+    {
+      id: "ch3", title: "The Arrest", date: "Dec 9, 2024", status: "resolved",
+      events: [
+        { id: "ev3-1", title: "Mangione Arrested", time: "9:14 AM", summary: "Arrested at McDonald's in Altoona, PA. Found with 3D-printed gun." },
+        { id: "ev3-2", title: "Background Revealed", time: "3:00 PM", summary: "Ivy League grad, wealthy family, former data engineer." }
+      ]
+    },
+    {
+      id: "ch4", title: "Public Debate", date: "Dec 10+", status: "ongoing",
+      events: [
+        { id: "ev4-1", title: "Polarized Reaction", time: "Ongoing", summary: "#FreeLuigi trends. 53% view as 'villain', 10% as 'hero'." },
+        { id: "ev4-2", title: "Healthcare Debate", time: "Ongoing", summary: "National conversation on insurance claim denials intensifies." }
+      ]
+    }
+  ],
+  sources: {
+    progressive: [
+      { name: "The Nation", lean: -9, credibility: 78, framing: "Systemic healthcare failures" },
+      { name: "MSNBC", lean: -8, credibility: 72, framing: "Criticizes hero worship" },
+      { name: "The Atlantic", lean: -7, credibility: 88, framing: "Expression of righteous anger" }
+    ],
+    centerLeft: [
+      { name: "New York Times", lean: -4, credibility: 92, framing: "Balanced fact coverage" },
+      { name: "NPR", lean: -3, credibility: 90, framing: "Thompson's background focus" },
+      { name: "CNN", lean: -5, credibility: 78, framing: "Extensive timeline coverage" }
+    ],
+    centrist: [
+      { name: "Reuters", lean: 0, credibility: 95, framing: "Wire service facts" },
+      { name: "Associated Press", lean: 0, credibility: 95, framing: "Breaking news" },
+      { name: "BBC", lean: -1, credibility: 93, framing: "International perspective" }
+    ],
+    centerRight: [
+      { name: "Wall Street Journal", lean: 4, credibility: 91, framing: "Business impact" },
+      { name: "CNBC", lean: 3, credibility: 85, framing: "Market analysis" },
+      { name: "The Economist", lean: 3, credibility: 90, framing: "Poll analysis" }
+    ],
+    conservative: [
+      { name: "Fox News", lean: 8, credibility: 68, framing: "Condemns violence" },
+      { name: "City Journal", lean: 7, credibility: 75, framing: "Broken moral compass" },
+      { name: "National Review", lean: 8, credibility: 76, framing: "Rule of law emphasis" }
+    ]
+  },
+  factChecks: [
+    { claim: "UHC denies 32% of all claims", verdict: "MOSTLY TRUE", color: "#D69E2E", explanation: "Figure is for ACA marketplace plans only." },
+    { claim: "Shell casings had 'deny, defend, depose'", verdict: "PARTIALLY FALSE", color: "#C53030", explanation: "Correct words: 'delay, deny, depose'" },
+    { claim: "Mangione was denied care by UHC", verdict: "LIKELY FALSE", color: "#C53030", explanation: "No evidence of personal claim denials." },
+    { claim: "Majority support Mangione", verdict: "FALSE", color: "#C53030", explanation: "Polls show 43-61% view him negatively." }
+  ],
+  userProfile: {
+    name: "Alex Chen",
+    level: 43,
+    diversityScore: 67,
+    factChecks: 320,
+    badges: [
+      { name: "Fact-Check Champion", icon: "✓", color: "#7C3AED" },
+      { name: "Balanced Thinker", icon: "🏆", color: "#7C3AED" }
+    ],
+    politicalBalance: { progressive: 58, conservative: 42 },
+    challenges: [
+      { name: "Opposite Day", progress: "5/7", description: "Read opposite perspectives" },
+      { name: "Expert Explorer", progress: "6/10", description: "Read expert analyses" }
+    ]
+  },
+  trendingEvents: [
+    { id: 1, title: "UnitedHealthcare CEO Shooting", category: "Healthcare", image: "https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?w=400&h=300&fit=crop", sources: 47 },
+    { id: 2, title: "AI Regulation Debate", category: "Technology", image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=300&fit=crop", sources: 32 },
+    { id: 3, title: "Climate Summit 2024", category: "Environment", image: "https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=400&h=300&fit=crop", sources: 28 }
+  ],
+  bookmarkedEvents: [
+    { id: 1, title: "UnitedHealthcare CEO Shooting", category: "Healthcare", bookmarked: true },
+    { id: 2, title: "Russia Ukraine War: Timeline", category: "Warfare", bookmarked: true },
+    { id: 3, title: "Debate on US Abortion Rights", category: "Public Policy", bookmarked: true },
+    { id: 4, title: "Is AI a Bubble or Not?", category: "Technology", bookmarked: true },
+    { id: 5, title: "EU's Defence Spending", category: "EU", bookmarked: false }
+  ]
+};
+
+// Prism Logo SVG Component
+const PrismLogo = ({ size = 40 }) => (
+  <svg width={size} height={size} viewBox="0 0 100 100" fill="none">
+    <defs>
+      <linearGradient id="prismGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#EC4899" />
+        <stop offset="50%" stopColor="#8B5CF6" />
+        <stop offset="100%" stopColor="#06B6D4" />
+      </linearGradient>
+    </defs>
+    <path d="M50 10 L90 80 L10 80 Z" fill="url(#prismGrad)" opacity="0.9" />
+    <path d="M50 25 L75 70 L25 70 Z" fill="white" opacity="0.3" />
+  </svg>
+);
+
+// Splash Screen
+const SplashScreen = ({ onComplete }) => {
+  useEffect(() => {
+    const timer = setTimeout(onComplete, 2500);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+
+  return (
+    <div className="fixed inset-0 flex flex-col items-center justify-center" 
+         style={{ background: 'linear-gradient(180deg, #1e293b 0%, #312e81 50%, #4c1d95 100%)' }}>
+      <div className="animate-pulse">
+        <div className="flex items-center gap-3 mb-4">
+          <PrismLogo size={60} />
+          <span className="text-4xl font-bold text-white tracking-tight">PRISM</span>
+        </div>
+        <p className="text-center text-slate-300 text-lg tracking-wide">See The Full Spectrum</p>
+      </div>
+      <div className="absolute bottom-20 flex gap-1">
+        {[0, 1, 2].map(i => (
+          <div key={i} className="w-2 h-2 bg-white/50 rounded-full animate-bounce" 
+               style={{ animationDelay: `${i * 0.15}s` }} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Bottom Navigation
+const BottomNav = ({ activeTab, setActiveTab }) => {
+  const tabs = [
+    { id: 'home', icon: Home, label: 'Home' },
+    { id: 'explore', icon: Globe, label: 'Explore' },
+    { id: 'bookmark', icon: Bookmark, label: 'Bookmark' },
+    { id: 'profile', icon: User, label: 'Profile' }
+  ];
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-slate-200 px-4 py-2 z-50">
+      <div className="flex justify-around items-center max-w-md mx-auto">
+        {tabs.map(tab => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  className={`flex flex-col items-center py-2 px-4 rounded-xl transition-all ${
+                    activeTab === tab.id 
+                      ? 'bg-slate-800 text-white' 
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}>
+            <tab.icon size={20} />
+            <span className="text-xs mt-1">{tab.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Home Screen
+const HomeScreen = ({ onEventClick }) => {
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+  
+  return (
+    <div className="pb-24">
+      {/* Header */}
+      <div className="px-5 pt-6 pb-4 bg-slate-50">
+        <p className="text-slate-600">Good Morning,</p>
+        <p className="text-xl font-semibold text-slate-800">Seeples</p>
+        <p className="text-slate-500 text-sm">{today}</p>
+      </div>
+
+      {/* Trending Now */}
+      <div className="bg-gradient-to-b from-slate-700 to-slate-800 px-5 py-5">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-white text-lg font-semibold">Trending Now...</h2>
+          <button className="text-violet-400 text-sm">See More</button>
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+          {demoData.trendingEvents.map((event, idx) => (
+            <div key={event.id} onClick={() => onEventClick(event)}
+                 className="flex-shrink-0 w-44 bg-slate-600/50 rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform">
+              <div className="h-28 bg-gradient-to-br from-slate-500 to-slate-700 flex items-center justify-center">
+                <TrendingUp className="text-white/30" size={40} />
+              </div>
+              <div className="p-3">
+                <h3 className="text-white text-sm font-medium line-clamp-2">{event.title}</h3>
+                <p className="text-violet-400 text-xs mt-1">{event.category}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Featured Event - UHC */}
+      <div className="px-5 py-5">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-slate-800 text-lg font-semibold">Featured Event</h2>
+        </div>
+        <div onClick={() => onEventClick(demoData.event)}
+             className="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-2xl p-5 cursor-pointer hover:shadow-xl transition-all">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <span className="inline-block px-2 py-1 bg-white/20 rounded text-white text-xs mb-2">
+                {demoData.event.status.toUpperCase()}
+              </span>
+              <h3 className="text-white text-lg font-semibold mb-2">{demoData.event.title}</h3>
+              <p className="text-white/80 text-sm line-clamp-2">{demoData.event.summary}</p>
+            </div>
+          </div>
+          <div className="flex gap-4 mt-4 pt-4 border-t border-white/20">
+            <div className="text-center">
+              <p className="text-white text-lg font-bold">{demoData.event.stats.sources}</p>
+              <p className="text-white/60 text-xs">Sources</p>
+            </div>
+            <div className="text-center">
+              <p className="text-white text-lg font-bold">{demoData.event.stats.factChecks}</p>
+              <p className="text-white/60 text-xs">Fact-Checks</p>
+            </div>
+            <div className="text-center">
+              <p className="text-white text-lg font-bold">4</p>
+              <p className="text-white/60 text-xs">Chapters</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Discover */}
+      <div className="px-5 py-3">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-slate-800 text-lg font-semibold">Discover...</h2>
+          <button className="text-violet-600 text-sm">See More</button>
+        </div>
+        <div className="space-y-3">
+          {['Climate Policy Debate', 'Tech Regulation News', 'Economic Outlook 2025'].map((title, idx) => (
+            <div key={idx} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+              <div className="w-16 h-16 bg-gradient-to-br from-violet-400 to-indigo-500 rounded-lg flex items-center justify-center">
+                <Globe className="text-white" size={24} />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-slate-800 font-medium">{title}</h4>
+                <p className="text-slate-500 text-sm">12 sources</p>
+              </div>
+              <ChevronRight className="text-slate-400" size={20} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Event Detail Screen
+const EventDetailScreen = ({ onBack }) => {
+  const [activeView, setActiveView] = useState('overview');
+  const [expandedChapter, setExpandedChapter] = useState('ch1');
+
+  const views = ['overview', 'spectrum', 'timeline', 'factcheck'];
+
+  return (
+    <div className="pb-24">
+      {/* Header */}
+      <div className="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-full">
+            <ArrowLeft size={20} />
+          </button>
+          <div className="flex-1">
+            <h1 className="text-lg font-semibold text-slate-800 line-clamp-1">UHC CEO Shooting</h1>
+            <p className="text-xs text-slate-500">{demoData.event.stats.sources} sources • {demoData.event.stats.factChecks} fact-checks</p>
+          </div>
+          <button className="p-2 hover:bg-slate-100 rounded-full">
+            <Bookmark size={20} className="text-violet-600 fill-violet-600" />
+          </button>
+        </div>
+      </div>
+
+      {/* View Tabs */}
+      <div className="flex gap-2 px-4 py-3 overflow-x-auto bg-slate-50">
+        {views.map(view => (
+          <button key={view} onClick={() => setActiveView(view)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                    activeView === view 
+                      ? 'bg-violet-600 text-white' 
+                      : 'bg-white text-slate-600 hover:bg-slate-100'
+                  }`}>
+            {view === 'overview' && 'Overview'}
+            {view === 'spectrum' && 'Source Spectrum'}
+            {view === 'timeline' && 'Timeline'}
+            {view === 'factcheck' && 'Fact-Checks'}
+          </button>
+        ))}
+      </div>
+
+      {/* Overview View */}
+      {activeView === 'overview' && (
+        <div className="px-4 py-4">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 mb-4">
+            <span className="inline-block px-2 py-1 bg-amber-500/20 text-amber-400 rounded text-xs font-medium mb-3">
+              ONGOING
+            </span>
+            <h2 className="text-white text-xl font-semibold mb-3">{demoData.event.title}</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">{demoData.event.summary}</p>
+            <div className="flex flex-wrap gap-2 mt-4">
+              {demoData.event.categories.map(cat => (
+                <span key={cat} className="px-3 py-1 bg-white/10 text-white/80 rounded-full text-xs">{cat}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="bg-blue-50 rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-blue-600">{demoData.event.stats.sources}</p>
+              <p className="text-xs text-blue-600/70">Sources</p>
+            </div>
+            <div className="bg-green-50 rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-green-600">{demoData.event.stats.factChecks}</p>
+              <p className="text-xs text-green-600/70">Fact-Checks</p>
+            </div>
+            <div className="bg-violet-50 rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-violet-600">4</p>
+              <p className="text-xs text-violet-600/70">Chapters</p>
+            </div>
+          </div>
+
+          <h3 className="text-slate-800 font-semibold mb-3">Key Perspectives</h3>
+          <div className="space-y-2">
+            {[
+              { label: 'Progressive View', color: 'bg-blue-500', text: 'Systemic healthcare failure symptom' },
+              { label: 'Centrist View', color: 'bg-slate-500', text: 'Complex issue requiring nuanced analysis' },
+              { label: 'Conservative View', color: 'bg-red-500', text: 'Violence never justified, rule of law' }
+            ].map(item => (
+              <div key={item.label} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                <div className={`w-1 h-10 ${item.color} rounded-full`} />
+                <div>
+                  <p className="text-sm font-medium text-slate-700">{item.label}</p>
+                  <p className="text-xs text-slate-500">{item.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Source Spectrum View */}
+      {activeView === 'spectrum' && (
+        <div className="px-4 py-4">
+          <div className="mb-4">
+            <div className="flex justify-between text-xs text-slate-500 mb-2">
+              <span>Progressive</span>
+              <span>Center</span>
+              <span>Conservative</span>
+            </div>
+            <div className="h-2 rounded-full bg-gradient-to-r from-blue-500 via-slate-400 to-red-500" />
+          </div>
+
+          {/* Progressive Sources */}
+          <div className="mb-4">
+            <h3 className="text-blue-600 font-semibold text-sm mb-2 flex items-center gap-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full" />
+              Progressive (-7 to -10)
+            </h3>
+            <div className="space-y-2">
+              {demoData.sources.progressive.map(source => (
+                <div key={source.name} className="flex items-center justify-between p-3 bg-blue-50 rounded-xl">
+                  <div>
+                    <p className="font-medium text-slate-800">{source.name}</p>
+                    <p className="text-xs text-slate-500">{source.framing}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-blue-600">{source.lean}</p>
+                    <p className="text-xs text-slate-400">{source.credibility}% cred</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Center Sources */}
+          <div className="mb-4">
+            <h3 className="text-slate-600 font-semibold text-sm mb-2 flex items-center gap-2">
+              <div className="w-3 h-3 bg-slate-500 rounded-full" />
+              Centrist (-2 to +2)
+            </h3>
+            <div className="space-y-2">
+              {demoData.sources.centrist.map(source => (
+                <div key={source.name} className="flex items-center justify-between p-3 bg-slate-100 rounded-xl">
+                  <div>
+                    <p className="font-medium text-slate-800">{source.name}</p>
+                    <p className="text-xs text-slate-500">{source.framing}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-slate-600">{source.lean}</p>
+                    <p className="text-xs text-slate-400">{source.credibility}% cred</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Conservative Sources */}
+          <div className="mb-4">
+            <h3 className="text-red-600 font-semibold text-sm mb-2 flex items-center gap-2">
+              <div className="w-3 h-3 bg-red-500 rounded-full" />
+              Conservative (+7 to +10)
+            </h3>
+            <div className="space-y-2">
+              {demoData.sources.conservative.map(source => (
+                <div key={source.name} className="flex items-center justify-between p-3 bg-red-50 rounded-xl">
+                  <div>
+                    <p className="font-medium text-slate-800">{source.name}</p>
+                    <p className="text-xs text-slate-500">{source.framing}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-red-600">+{source.lean}</p>
+                    <p className="text-xs text-slate-400">{source.credibility}% cred</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Timeline View */}
+      {activeView === 'timeline' && (
+        <div className="px-4 py-4">
+          {demoData.chapters.map(chapter => (
+            <div key={chapter.id} className="mb-4">
+              <button onClick={() => setExpandedChapter(expandedChapter === chapter.id ? null : chapter.id)}
+                      className="w-full flex items-center justify-between p-4 bg-slate-100 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    chapter.status === 'ongoing' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'
+                  }`}>
+                    {chapter.status === 'ongoing' ? <Clock size={18} /> : <Check size={18} />}
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-slate-800">{chapter.title}</p>
+                    <p className="text-xs text-slate-500">{chapter.date}</p>
+                  </div>
+                </div>
+                {expandedChapter === chapter.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+              
+              {expandedChapter === chapter.id && (
+                <div className="mt-2 ml-6 border-l-2 border-violet-200 pl-4 space-y-3">
+                  {chapter.events.map(event => (
+                    <div key={event.id} className="relative">
+                      <div className="absolute -left-6 top-2 w-3 h-3 bg-violet-500 rounded-full border-2 border-white" />
+                      <div className="bg-white p-3 rounded-xl shadow-sm">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs text-violet-600 font-medium">{event.time}</span>
+                        </div>
+                        <p className="font-medium text-slate-800 text-sm">{event.title}</p>
+                        <p className="text-xs text-slate-500 mt-1">{event.summary}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Fact-Check View */}
+      {activeView === 'factcheck' && (
+        <div className="px-4 py-4">
+          <div className="mb-4 p-4 bg-slate-100 rounded-xl">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="text-violet-600" size={20} />
+              <span className="font-semibold text-slate-800">Verified Claims</span>
+            </div>
+            <p className="text-sm text-slate-600">{demoData.factChecks.length} claims have been fact-checked by multiple sources</p>
+          </div>
+
+          <div className="space-y-3">
+            {demoData.factChecks.map((fc, idx) => (
+              <div key={idx} className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                <div className="p-4">
+                  <p className="text-sm font-medium text-slate-800 mb-2">"{fc.claim}"</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-2 py-1 rounded text-xs font-bold text-white" style={{ backgroundColor: fc.color }}>
+                      {fc.verdict}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500">{fc.explanation}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Bookmark Screen
+const BookmarkScreen = () => {
+  const [bookmarks, setBookmarks] = useState(demoData.bookmarkedEvents);
+
+  const toggleBookmark = (id) => {
+    setBookmarks(bookmarks.map(b => b.id === id ? { ...b, bookmarked: !b.bookmarked } : b));
+  };
+
+  return (
+    <div className="pb-24">
+      <div className="px-5 pt-6 pb-4 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-slate-800">Bookmark</h1>
+        <button className="text-blue-600 font-medium">Done</button>
+      </div>
+
+      <div className="px-5">
+        {bookmarks.map(event => (
+          <div key={event.id} className="flex items-center gap-4 py-4 border-b border-slate-100">
+            <div className="flex-1">
+              <h3 className="font-medium text-slate-800 mb-1">{event.title}</h3>
+              <p className="text-sm text-slate-500">{event.category}</p>
+            </div>
+            <div className="w-20 h-16 bg-gradient-to-br from-slate-300 to-slate-400 rounded-lg flex items-center justify-center">
+              <BookOpen className="text-white" size={24} />
+            </div>
+            <button onClick={() => toggleBookmark(event.id)}
+                    className="p-2 hover:bg-slate-100 rounded-full">
+              <Bookmark size={24} className={event.bookmarked ? 'text-slate-700 fill-slate-700' : 'text-slate-400'} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Profile Screen
+const ProfileScreen = () => {
+  const profile = demoData.userProfile;
+
+  return (
+    <div className="pb-24">
+      {/* Profile Header */}
+      <div className="px-5 pt-6 pb-6">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white text-2xl font-bold">
+            {profile.name.charAt(0)}
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-slate-800">{profile.name}</h1>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {profile.badges.map(badge => (
+                <span key={badge.name} className="flex items-center gap-1 px-2 py-1 bg-violet-100 text-violet-700 rounded-full text-xs">
+                  <span>{badge.icon}</span> {badge.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-4 pb-6 border-b border-slate-200">
+          <div className="text-center">
+            <p className="text-slate-500 text-xs mb-1"># of Fact-Checks</p>
+            <p className="text-2xl font-bold text-slate-800">{profile.factChecks}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-slate-500 text-xs mb-1">Diversity Score</p>
+            <p className="text-2xl font-bold text-slate-800">{profile.diversityScore}/100</p>
+          </div>
+          <div className="text-center">
+            <p className="text-slate-500 text-xs mb-1">Level</p>
+            <p className="text-2xl font-bold text-slate-800">{profile.level}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Information Diet Preview */}
+      <div className="px-5 mb-6">
+        <h2 className="font-semibold text-slate-800 mb-3">Political Balance</h2>
+        <div className="bg-slate-100 rounded-xl p-4">
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-blue-600">Progressive {profile.politicalBalance.progressive}%</span>
+            <span className="text-red-600">Conservative {profile.politicalBalance.conservative}%</span>
+          </div>
+          <div className="h-3 bg-slate-200 rounded-full overflow-hidden flex">
+            <div className="bg-blue-500 transition-all" style={{ width: `${profile.politicalBalance.progressive}%` }} />
+            <div className="bg-red-500 transition-all" style={{ width: `${profile.politicalBalance.conservative}%` }} />
+          </div>
+          <p className="text-center text-green-600 text-sm mt-2 font-medium">✓ BALANCED</p>
+        </div>
+      </div>
+
+      {/* Menu Sections */}
+      <div className="px-5">
+        <h2 className="font-semibold text-slate-800 mb-2">My Archive</h2>
+        {['Ongoing Topics', 'Resolved Topics'].map(item => (
+          <button key={item} className="w-full flex items-center justify-between py-4 border-b border-slate-100">
+            <span className="text-slate-700">{item}</span>
+            <ChevronRight className="text-slate-400" size={20} />
+          </button>
+        ))}
+
+        <h2 className="font-semibold text-slate-800 mt-6 mb-2">My Progress</h2>
+        {['Information Diets', 'Weekly Challenges', 'Games & Records'].map(item => (
+          <button key={item} className="w-full flex items-center justify-between py-4 border-b border-slate-100">
+            <span className="text-slate-700">{item}</span>
+            <ChevronRight className="text-slate-400" size={20} />
+          </button>
+        ))}
+
+        <h2 className="font-semibold text-slate-800 mt-6 mb-2">Settings</h2>
+        {['My Account', 'Privacy Settings', 'Offline Reading', 'About Us'].map(item => (
+          <button key={item} className="w-full flex items-center justify-between py-4 border-b border-slate-100">
+            <span className="text-slate-700">{item}</span>
+            <ChevronRight className="text-slate-400" size={20} />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Explore Screen
+const ExploreScreen = ({ onEventClick }) => {
+  const categories = ['All', 'Politics', 'Technology', 'Healthcare', 'Economy', 'Environment'];
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  return (
+    <div className="pb-24">
+      <div className="px-5 pt-6 pb-4">
+        <h1 className="text-2xl font-bold text-slate-800 mb-4">Explore</h1>
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {categories.map(cat => (
+            <button key={cat} onClick={() => setActiveCategory(cat)}
+                    className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
+                      activeCategory === cat 
+                        ? 'bg-violet-600 text-white' 
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}>
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="px-5 space-y-4">
+        {demoData.trendingEvents.map(event => (
+          <div key={event.id} onClick={() => onEventClick(event)}
+               className="bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg transition-all">
+            <div className="h-40 bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
+              <TrendingUp className="text-white/30" size={60} />
+            </div>
+            <div className="p-4">
+              <span className="inline-block px-2 py-1 bg-violet-100 text-violet-700 rounded text-xs mb-2">
+                {event.category}
+              </span>
+              <h3 className="font-semibold text-slate-800 mb-1">{event.title}</h3>
+              <p className="text-sm text-slate-500">{event.sources} sources aggregated</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Main App Component
+export default function PRISMApp() {
+  const [showSplash, setShowSplash] = useState(true);
+  const [activeTab, setActiveTab] = useState('home');
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+  };
+
+  if (showSplash) {
+    return <SplashScreen onComplete={() => setShowSplash(false)} />;
+  }
+
+  if (selectedEvent) {
+    return (
+      <div className="min-h-screen bg-white max-w-md mx-auto relative">
+        <EventDetailScreen onBack={() => setSelectedEvent(null)} />
+        <BottomNav activeTab={activeTab} setActiveTab={(tab) => { setSelectedEvent(null); setActiveTab(tab); }} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-white max-w-md mx-auto relative">
+      {activeTab === 'home' && <HomeScreen onEventClick={handleEventClick} />}
+      {activeTab === 'explore' && <ExploreScreen onEventClick={handleEventClick} />}
+      {activeTab === 'bookmark' && <BookmarkScreen />}
+      {activeTab === 'profile' && <ProfileScreen />}
+      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+    </div>
+  );
+}
