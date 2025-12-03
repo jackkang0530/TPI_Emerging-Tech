@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PRISM - See The Full Spectrum</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: #f8fafc; }
+    .phone-frame { max-width: 390px; margin: 0 auto; min-height: 100vh; background: white; position: relative; overflow-x: hidden; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+    .animate-fadeIn { animation: fadeIn 0.4s ease-out; }
+    .animate-fadeInUp { animation: fadeInUp 0.6s ease-out; }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .gradient-prism { background: linear-gradient(180deg, #1e293b 0%, #312e81 50%, #4c1d95 100%); }
+    .dots::after { content: '....'; animation: blink 1s infinite; }
+    .spectrum-dot { transition: all 0.3s ease; cursor: pointer; }
+    .spectrum-dot:hover { transform: scale(1.3); z-index: 10; }
+    .upload-frame { border: 2px solid rgba(255,255,255,0.3); border-radius: 20px; position: relative; }
+    .upload-frame::before, .upload-frame::after { content: ''; position: absolute; width: 30px; height: 30px; border: 3px solid white; }
+    .upload-frame::before { top: -3px; left: -3px; border-right: none; border-bottom: none; border-radius: 15px 0 0 0; }
+    .upload-frame::after { top: -3px; right: -3px; border-left: none; border-bottom: none; border-radius: 0 15px 0 0; }
+    .corner-bl, .corner-br { position: absolute; width: 30px; height: 30px; border: 3px solid white; bottom: -3px; }
+    .corner-bl { left: -3px; border-right: none; border-top: none; border-radius: 0 0 0 15px; }
+    .corner-br { right: -3px; border-left: none; border-top: none; border-radius: 0 0 15px 0; }
+    .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+  </style>
+</head>
+<body>
+  <div id="app" class="phone-frame"></div>
+
+  <script>
+    // ==================== DEMO DATA ====================
+    const demoData = {
+      event: {
+        title: "UnitedHealthcare CEO Brian Thompson Shooting",
+        summary: "Brian Thompson, 50-year-old CEO of UnitedHealthcare, was shot and killed on December 4, 2024, outside the New York Hilton Midtown hotel. The suspect, Luigi Mangione (26), was arrested five days later.",
+        status: "ongoing",
+        categories: ["Crime", "Healthcare", "Corporate America"],
+        stats: { sources: 47, factChecks: 8, bookmarks: 12847 }
+      },
+      chapters: [
+        { id: "ch1", title: "The Shooting", date: "Dec 4, 2024", status: "resolved",
+          events: [
+            { title: "Initial Incident", time: "6:45 AM", summary: "Thompson shot twice outside New York Hilton Midtown." },
+            { title: "Corporate Response", time: "8:00 AM", summary: "UnitedHealth cancels investor conference." },
+            { title: "NYPD Press Conference", time: "12:00 PM", summary: "Commissioner announces 'premeditated attack'." }
+          ]
+        },
+        { id: "ch2", title: "The Manhunt", date: "Dec 5-8, 2024", status: "resolved",
+          events: [
+            { title: "Suspect Images Released", time: "Dec 5", summary: "NYPD releases surveillance images." },
+            { title: "FBI Joins Investigation", time: "Dec 6", summary: "Reward increased to $60,000." }
+          ]
+        },
+        { id: "ch3", title: "The Arrest", date: "Dec 9, 2024", status: "resolved",
+          events: [
+            { title: "Mangione Arrested", time: "9:14 AM", summary: "Arrested at McDonald's in Altoona, PA." },
+            { title: "Background Revealed", time: "3:00 PM", summary: "Ivy League grad, wealthy family." }
+          ]
+        },
+        { id: "ch4", title: "Public Debate", date: "Dec 10+", status: "ongoing",
+          events: [
+            { title: "Polarized Reaction", time: "Ongoing", summary: "#FreeLuigi trends. 53% view as 'villain'." },
+            { title: "Healthcare Debate", time: "Ongoing", summary: "National conversation on insurance denials." }
+          ]
+        }
+      ],
+      sources: [
+        { name: "Reuters", lean: 0, credibility: 95, type: "Wire Service", framing: "Factual breaking news coverage", url: "https://www.reuters.com/", color: "#6B7280" },
+        { name: "Associated Press", lean: 0, credibility: 95, type: "Wire Service", framing: "Breaking news updates", url: "https://apnews.com/", color: "#6B7280" },
+        { name: "BBC", lean: -1, credibility: 93, type: "International", framing: "Global perspective on US healthcare", url: "https://www.bbc.com/", color: "#6B7280" },
+        { name: "New York Times", lean: -4, credibility: 92, type: "Legacy Media", framing: "In-depth investigation and context", url: "https://www.nytimes.com/", color: "#3B82F6" },
+        { name: "Washington Post", lean: -4, credibility: 90, type: "Legacy Media", framing: "Political implications analysis", url: "https://www.washingtonpost.com/", color: "#3B82F6" },
+        { name: "NPR", lean: -3, credibility: 90, type: "Public Media", framing: "Healthcare system context", url: "https://www.npr.org/", color: "#3B82F6" },
+        { name: "CNN", lean: -5, credibility: 78, type: "Cable News", framing: "24/7 breaking coverage", url: "https://www.cnn.com/", color: "#3B82F6" },
+        { name: "The Atlantic", lean: -7, credibility: 88, type: "Magazine", framing: "Essay on healthcare frustration", url: "https://www.theatlantic.com/", color: "#2563EB" },
+        { name: "MSNBC", lean: -8, credibility: 72, type: "Cable News", framing: "Systemic critique of insurers", url: "https://www.msnbc.com/", color: "#2563EB" },
+        { name: "The Nation", lean: -9, credibility: 78, type: "Progressive", framing: "Structural healthcare failures", url: "https://www.thenation.com/", color: "#1D4ED8" },
+        { name: "Wall Street Journal", lean: 4, credibility: 91, type: "Business", framing: "Market and corporate impact", url: "https://www.wsj.com/", color: "#F97316" },
+        { name: "The Economist", lean: 3, credibility: 90, type: "International", framing: "Economic policy analysis", url: "https://www.economist.com/", color: "#F97316" },
+        { name: "Fox News", lean: 8, credibility: 68, type: "Cable News", framing: "Law and order emphasis", url: "https://www.foxnews.com/", color: "#DC2626" },
+        { name: "National Review", lean: 8, credibility: 76, type: "Conservative", framing: "Rule of law, anti-vigilantism", url: "https://www.nationalreview.com/", color: "#DC2626" },
+        { name: "Daily Wire", lean: 9, credibility: 65, type: "Conservative", framing: "Condemns celebration of violence", url: "https://www.dailywire.com/", color: "#B91C1C" }
+      ],
+      factChecks: [
+        { claim: "UHC denies 32% of all claims", verdict: "MOSTLY TRUE", color: "#D69E2E", explanation: "Figure is for ACA marketplace plans only.", sources: ["ValuePenguin", "CMS Data"] },
+        { claim: "Shell casings had 'deny, defend, depose'", verdict: "PARTIALLY FALSE", color: "#C53030", explanation: "Actual words were 'delay, deny, depose'.", sources: ["NYPD Statement", "Reuters"] },
+        { claim: "Mangione was denied care by UHC", verdict: "UNVERIFIED", color: "#718096", explanation: "No evidence found linking Mangione to UHC claim denials.", sources: ["Court Documents", "FBI"] },
+        { claim: "Majority of Americans support Mangione", verdict: "FALSE", color: "#C53030", explanation: "Polls show 43-61% view him negatively.", sources: ["Economist/YouGov", "Rasmussen"] },
+        { claim: "Thompson earned $10M+ annually", verdict: "TRUE", color: "#38A169", explanation: "SEC filings show $10.2M total compensation in 2023.", sources: ["SEC Filing"] },
+        { claim: "Gun was 3D-printed ghost gun", verdict: "TRUE", color: "#38A169", explanation: "NYPD confirmed the firearm was a 3D-printed ghost gun.", sources: ["NYPD", "ATF"] }
+      ],
+      informationJourney: [
+        { date: "Dec 4, 6:45 AM", event: "Shooting occurs", type: "origin", reach: "Local", sources: 1 },
+        { date: "Dec 4, 7:30 AM", event: "NYPD confirms incident", type: "official", reach: "National", sources: 5 },
+        { date: "Dec 4, 12:00 PM", event: "Goes viral on social media", type: "viral", reach: "Global", sources: 50 },
+        { date: "Dec 5", event: "Suspect images released", type: "development", reach: "Global", sources: 100 },
+        { date: "Dec 6-8", event: "'Delay Deny Depose' decoded", type: "analysis", reach: "Global", sources: 200 },
+        { date: "Dec 9", event: "Mangione arrested", type: "breaking", reach: "Global", sources: 500 },
+        { date: "Dec 10+", event: "Public debate intensifies", type: "ongoing", reach: "Global", sources: 1000 }
+      ],
+      communityQuestions: [
+        { id: 1, text: "What's the actual success rate of insurance claim appeals?", upvotes: 234, status: "investigating", askedBy: "PolicyWatcher", daysAgo: 5 },
+        { id: 2, text: "How does UHC's denial rate compare to other insurers?", upvotes: 189, status: "answered", askedBy: "HealthcareProf", daysAgo: 7 },
+        { id: 3, text: "What legal precedents exist for cases like this?", upvotes: 156, status: "open", askedBy: "LawStudent2024", daysAgo: 3 },
+        { id: 4, text: "How are other countries covering this story?", upvotes: 98, status: "open", askedBy: "GlobalReader", daysAgo: 2 }
+      ],
+      userProfile: {
+        name: "Alex Chen",
+        level: 43,
+        diversityScore: 67,
+        factChecks: 320,
+        badges: [{ name: "Fact-Check Champion", icon: "✓", color: "#7C3AED" }, { name: "Balanced Thinker", icon: "⚖️", color: "#7C3AED" }],
+        politicalBalance: { progressive: 58, conservative: 42 },
+        monthlyStats: { eventsExplored: 23, sourcesRead: 156, factChecksViewed: 47, diversityChange: 13 },
+        sourceTypes: { legacy: 65, social: 25, expert: 10 }
+      },
+      ongoingTopics: [
+        { id: 1, title: "UnitedHealthcare CEO Shooting", category: "Healthcare", lastUpdate: "2 hours ago", progress: 75 },
+        { id: 2, title: "Russia Ukraine War", category: "Warfare", lastUpdate: "30 min ago", progress: 45 },
+        { id: 3, title: "AI Regulation Debate", category: "Technology", lastUpdate: "1 day ago", progress: 60 }
+      ],
+      resolvedTopics: [
+        { id: 1, title: "2024 US Presidential Election", category: "Politics", resolvedDate: "Nov 6, 2024", sourcesRead: 89 },
+        { id: 2, title: "OpenAI Leadership Crisis", category: "Technology", resolvedDate: "Nov 22, 2023", sourcesRead: 45 },
+        { id: 3, title: "Silicon Valley Bank Collapse", category: "Finance", resolvedDate: "Mar 2023", sourcesRead: 67 }
+      ],
+      challenges: {
+        active: [
+          { id: 1, name: "Opposite Day", description: "Read perspectives opposite to your usual preferences", current: 5, target: 7, unit: "days", reward: "50 XP" },
+          { id: 2, name: "Expert Explorer", description: "Read analyses from verified experts", current: 6, target: 10, unit: "articles", reward: "30 XP" },
+          { id: 3, name: "Fact-Check First", description: "View fact-checks before sharing", current: 8, target: 10, unit: "times", reward: "25 XP" }
+        ],
+        completed: [
+          { id: 1, name: "Balanced Thinker", description: "Maintain 40-60% balance for 30 days", completedDate: "Nov 28, 2024", reward: "Badge + 100 XP" },
+          { id: 2, name: "Fact-Check Champion", description: "View 50+ fact-checks", completedDate: "Nov 15, 2024", reward: "Badge + 75 XP" },
+          { id: 3, name: "First Week Warrior", description: "Use app for 7 consecutive days", completedDate: "Oct 10, 2024", reward: "Badge + 50 XP" }
+        ]
+      },
+      bookmarkedEvents: [
+        { id: 1, title: "UnitedHealthcare CEO Shooting", category: "Healthcare", bookmarked: true, image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/uhc-shooting.jpeg" },
+        { id: 2, title: "Russia Ukraine War: Timeline", category: "Warfare", bookmarked: true, image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/Russia%20Ukraine%20War.jpeg" },
+        { id: 3, title: "Debate on US Abortion Rights", category: "Public Policy", bookmarked: true, image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Debate%20on%20US's%20Abortion.jpeg" },
+        { id: 4, title: "Is AI a Bubble or Not?", category: "Technology", bookmarked: true, image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Is%20AI%20a%20Bubble.jpeg" },
+        { id: 5, title: "Facts of Hong Kong Apartment Fire", category: "Current News", bookmarked: true, image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Facts%20of%20Hong%20Kong.jpeg" },
+        { id: 6, title: "EU's Defence Spending", category: "EU", bookmarked: false, image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/On%20EU's.jpeg" }
+      ],
+      trendingEvents: [
+        { id: 1, title: "UHC CEO Shooting", category: "Healthcare", color: "from-red-500/30 to-slate-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/uhc-shooting.jpeg" },
+        { id: 2, title: "Is AI a Bubble or Not?", category: "Technology", color: "from-blue-500/30 to-slate-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Is%20AI%20a%20Bubble.jpeg" },
+        { id: 3, title: "Hong Kong Apartment Fire", category: "Current News", color: "from-orange-500/30 to-slate-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Facts%20of%20Hong%20Kong.jpeg" }
+      ],
+      exploreEvents: [
+        { id: 1, title: "UnitedHealthcare CEO Shooting", category: "Healthcare", sources: 47, color: "from-red-500 to-rose-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/uhc-shooting.jpeg" },
+        { id: 2, title: "Russia Ukraine War: Timeline & Live Updates", category: "Warfare", sources: 156, color: "from-amber-500 to-orange-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/Russia%20Ukraine%20War.jpeg" },
+        { id: 3, title: "Debate on US's Abortion Rights", category: "Public Policy", sources: 89, color: "from-pink-500 to-rose-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Debate%20on%20US's%20Abortion.jpeg" },
+        { id: 4, title: "On EU's Defence Spending", category: "EU", sources: 34, color: "from-blue-500 to-indigo-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/On%20EU's.jpeg" },
+        { id: 5, title: "Is AI a Bubble or Not?", category: "Technology", sources: 67, color: "from-cyan-500 to-blue-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Is%20AI%20a%20Bubble.jpeg" },
+        { id: 6, title: "History of Israel-Palestine Conflict", category: "Warfare", sources: 203, color: "from-slate-500 to-slate-800", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/israels-gaza.png" },
+        { id: 7, title: "Facts of Hong Kong Apartment Fire", category: "Current News", sources: 28, color: "from-orange-500 to-red-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Facts%20of%20Hong%20Kong.jpeg" },
+        { id: 8, title: "Venezuela & Trump Administration", category: "Politics", sources: 45, color: "from-purple-500 to-violet-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/trump-venezuela.png" }
+      ]
+    };
+
+    // ==================== APP STATE ====================
+    let currentScreen = 'splash';
+    let activeTab = 'home';
+    let expandedChapter = 'ch1';
+    let eventDetailView = 'overview';
+    let selectedSource = null;
+
+    // ==================== ICONS ====================
+    const icons = {
+      home: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>`,
+      globe: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>`,
+      upload: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
+      bookmark: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>`,
+      bookmarkFilled: `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>`,
+      user: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+      chevronRight: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>`,
+      chevronDown: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 12,15 18,9"/></svg>`,
+      chevronUp: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18,15 12,9 6,15"/></svg>`,
+      arrowLeft: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>`,
+      arrowUp: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>`,
+      check: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>`,
+      clock: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>`,
+      shield: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+      trending: `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/><polyline points="17,6 23,6 23,12"/></svg>`,
+      externalLink: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`,
+      messageCircle: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>`,
+      thumbsUp: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>`,
+      lock: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`,
+      x: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+      image: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>`,
+      link: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>`,
+      file: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>`,
+      folder: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>`,
+      checkCircle: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>`,
+      pieChart: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 118 2.83"/><path d="M22 12A10 10 0 0012 2v10z"/></svg>`,
+      target: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+      info: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
+      award: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21,13.89 7,23 12,20 17,23 15.79,13.88"/></svg>`,
+      trendingUp: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/><polyline points="17,6 23,6 23,12"/></svg>`
+    };
+
+    // ==================== RENDER FUNCTIONS ====================
+
+    function renderSplash() {
+      return `
+        <div class="fixed inset-0 flex flex-col items-center justify-center gradient-prism">
+          <div class="text-center px-8">
+            <p class="text-white text-2xl font-light leading-relaxed">understand any event</p>
+            <p class="text-white text-2xl font-light leading-relaxed text-right">from every angle<span class="dots"></span></p>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBottomNav() {
+      const tabs = [
+        { id: 'home', icon: icons.home, label: 'Home' },
+        { id: 'explore', icon: icons.globe, label: 'Explore' },
+        { id: 'upload', icon: icons.upload, label: 'Upload' },
+        { id: 'bookmark', icon: icons.bookmark, label: 'Bookmark' },
+        { id: 'profile', icon: icons.user, label: 'Profile' }
+      ];
+      return `
+        <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-slate-200 px-2 py-2 z-50" style="max-width: 390px; margin: 0 auto;">
+          <div class="flex justify-around items-center">
+            ${tabs.map(tab => `
+              <button onclick="switchTab('${tab.id}')" class="flex flex-col items-center py-2 px-3 rounded-xl transition-all ${activeTab === tab.id ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-700'}">
+                ${tab.icon}
+                <span class="text-xs mt-1">${tab.label}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderHome() {
+      const today = new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="px-5 pt-6 pb-4 bg-slate-50">
+            <p class="text-slate-600">Good Morning,</p>
+            <p class="text-xl font-semibold text-slate-800">Seeples</p>
+            <p class="text-slate-500 text-sm">${today}</p>
+          </div>
+          <div class="px-5 py-4">
+            <button onclick="switchTab('upload')" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all">
+              <span class="text-lg font-semibold">fact checking</span>
+              ${icons.arrowUp}
+            </button>
+          </div>
+          <!-- Trending Now with IMAGES -->
+          <div class="bg-gradient-to-b from-slate-700 to-slate-800 px-5 py-5">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-white text-lg font-semibold">Trending Now...</h2>
+              <button class="text-violet-400 text-sm">See More</button>
+            </div>
+            <div class="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
+              ${demoData.trendingEvents.map(event => `
+                <div onclick="showEventDetail()" class="flex-shrink-0 w-44 bg-slate-600/50 rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform">
+                  <div class="h-28 bg-gradient-to-br ${event.color} flex items-center justify-center overflow-hidden">
+                    ${event.image ? `<img src="${event.image}" alt="${event.title}" class="w-full h-full object-cover"/>` : icons.trending}
+                  </div>
+                  <div class="p-3">
+                    <h3 class="text-white text-sm font-medium line-clamp-2">${event.title}</h3>
+                    <p class="text-violet-400 text-xs mt-1">${event.category}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <!-- Featured Event -->
+          <div class="px-5 py-5">
+            <h2 class="text-slate-800 text-lg font-semibold mb-4">Featured Event</h2>
+            <div onclick="showEventDetail()" class="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-2xl p-5 cursor-pointer hover:shadow-xl transition-all">
+              <span class="inline-block px-2 py-1 bg-white/20 rounded text-white text-xs mb-2">ONGOING</span>
+              <h3 class="text-white text-lg font-semibold mb-2">${demoData.event.title}</h3>
+              <p class="text-white/80 text-sm line-clamp-2">${demoData.event.summary}</p>
+              <div class="flex gap-4 mt-4 pt-4 border-t border-white/20">
+                <div class="text-center"><p class="text-white text-lg font-bold">${demoData.event.stats.sources}</p><p class="text-white/60 text-xs">Sources</p></div>
+                <div class="text-center"><p class="text-white text-lg font-bold">${demoData.event.stats.factChecks}</p><p class="text-white/60 text-xs">Fact-Checks</p></div>
+                <div class="text-center"><p class="text-white text-lg font-bold">4</p><p class="text-white/60 text-xs">Chapters</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    function renderUpload() {
+      return `
+        <div class="min-h-screen gradient-prism pb-24 animate-fadeIn">
+          <div class="px-6 pt-8 pb-6">
+            <div class="upload-frame aspect-[3/4] bg-slate-800/30 rounded-2xl flex items-center justify-center relative overflow-hidden">
+              <div class="corner-bl"></div>
+              <div class="corner-br"></div>
+              <div class="text-center text-white/50">
+                <div class="mb-4">${icons.image.replace('width="24"', 'width="48"').replace('height="24"', 'height="48"')}</div>
+                <p class="text-sm">Tap to upload screenshot</p>
+                <p class="text-xs mt-1">or paste a link</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-t-3xl px-6 py-8 mt-auto">
+            <h2 class="text-3xl font-bold text-slate-800 leading-tight text-center"><span class="inline-block">Upload.</span><br/><span class="inline-block ml-6">Analyse.</span><br/><span class="inline-block ml-12">Illuminate.</span></h2>
+            <button onclick="showEventDetail(); setEventView('factcheck');" class="w-full mt-6 bg-white border-2 border-blue-600 text-blue-600 py-4 px-6 rounded-full flex items-center justify-center gap-3 font-semibold hover:bg-blue-50 transition-all">fact checking ${icons.arrowUp}</button>
+            <div class="flex justify-center gap-6 mt-6">
+              <button class="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-slate-100 transition-all">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">${icons.image}</div>
+                <span class="text-xs text-slate-600">Image</span>
+              </button>
+              <button class="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-slate-100 transition-all">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">${icons.link}</div>
+                <span class="text-xs text-slate-600">Link</span>
+              </button>
+              <button class="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-slate-100 transition-all">
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">${icons.file}</div>
+                <span class="text-xs text-slate-600">File</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    function renderExplore() {
+      const categories = ['All', 'Politics', 'Technology', 'Healthcare', 'Warfare', 'EU', 'Current News'];
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="px-5 pt-6 pb-4">
+            <h1 class="text-2xl font-bold text-slate-800 mb-4">Explore</h1>
+            <div class="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+              ${categories.map((cat, i) => `<button class="px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${i === 0 ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${cat}</button>`).join('')}
+            </div>
+          </div>
+          <div class="px-5 space-y-4">
+            ${demoData.exploreEvents.map(event => `
+              <div onclick="showEventDetail()" class="bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg transition-all">
+                <div class="h-40 bg-gradient-to-br ${event.color} flex items-center justify-center relative overflow-hidden">
+                  ${event.image ? `<img src="${event.image}" alt="${event.title}" class="w-full h-full object-cover"/>` : `<div class="text-white/20">${icons.trending}</div>`}
+                </div>
+                <div class="p-4">
+                  <span class="inline-block px-2 py-1 bg-violet-100 text-violet-700 rounded text-xs mb-2">${event.category}</span>
+                  <h3 class="font-semibold text-slate-800 mb-1">${event.title}</h3>
+                  <p class="text-sm text-slate-500">${event.sources} sources aggregated</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ★★★ FIXED: Bookmark with proper IMG tags ★★★
+    function renderBookmark() {
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="px-5 pt-6 pb-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-slate-800">Bookmark</h1>
+            <button class="text-blue-600 font-medium">Done</button>
+          </div>
+          <div class="px-5">
+            ${demoData.bookmarkedEvents.map(ev => `
+              <div class="flex items-center gap-4 py-4 border-b border-slate-100">
+                <div class="flex-1">
+                  <h3 class="font-medium text-slate-800 mb-1">${ev.title}</h3>
+                  <p class="text-sm text-slate-500">${ev.category}</p>
+                </div>
+                <div class="w-16 h-14 bg-gradient-to-br from-slate-200 to-slate-300 rounded-lg flex items-center justify-center overflow-hidden">
+                  ${ev.image ? `<img src="${ev.image}" alt="${ev.title}" class="w-full h-full object-cover"/>` : `<span class="text-slate-400">${icons.image}</span>`}
+                </div>
+                <button onclick="toggleBookmark(${ev.id})" class="p-2 hover:bg-slate-100 rounded-full">
+                  ${ev.bookmarked ? `<span class="text-slate-700">${icons.bookmarkFilled}</span>` : `<span class="text-slate-400">${icons.bookmark}</span>`}
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ★★★ FIXED: Profile with working sub-pages ★★★
+    function renderProfile() {
+      const p = demoData.userProfile;
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="px-5 pt-6 pb-6">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-20 h-20 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white text-2xl font-bold">${p.name.charAt(0)}</div>
+              <div>
+                <h1 class="text-xl font-bold text-slate-800">${p.name}</h1>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  ${p.badges.map(b => `<span class="flex items-center gap-1 px-2 py-1 bg-violet-100 text-violet-700 rounded-full text-xs"><span>${b.icon}</span> ${b.name}</span>`).join('')}
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 pb-6 border-b border-slate-200">
+              <div class="text-center"><p class="text-slate-500 text-xs mb-1"># of Fact-Checks</p><p class="text-2xl font-bold text-slate-800">${p.factChecks}</p></div>
+              <div class="text-center"><p class="text-slate-500 text-xs mb-1">Diversity Score</p><p class="text-2xl font-bold text-slate-800">${p.diversityScore}/100</p></div>
+              <div class="text-center"><p class="text-slate-500 text-xs mb-1">Level</p><p class="text-2xl font-bold text-slate-800">${p.level}</p></div>
+            </div>
+          </div>
+          <div class="px-5 mb-6">
+            <h2 class="font-semibold text-slate-800 mb-3">Political Balance</h2>
+            <div class="bg-slate-100 rounded-xl p-4">
+              <div class="flex justify-between text-sm mb-2">
+                <span class="text-blue-600">Progressive ${p.politicalBalance.progressive}%</span>
+                <span class="text-red-600">Conservative ${p.politicalBalance.conservative}%</span>
+              </div>
+              <div class="h-3 bg-slate-200 rounded-full overflow-hidden flex">
+                <div class="bg-blue-500" style="width: ${p.politicalBalance.progressive}%"></div>
+                <div class="bg-red-500" style="width: ${p.politicalBalance.conservative}%"></div>
+              </div>
+              <p class="text-center text-green-600 text-sm mt-2 font-medium">✓ BALANCED</p>
+            </div>
+          </div>
+          <div class="px-5">
+            <h2 class="font-semibold text-slate-800 mb-2">My Archive</h2>
+            <button onclick="navigateTo('ongoingTopics')" class="w-full flex items-center justify-between py-4 border-b border-slate-100 text-left hover:bg-slate-50 transition-all">
+              <span class="text-slate-700 flex items-center gap-3"><span class="text-violet-600">${icons.folder}</span> Ongoing Topics</span>
+              <span class="flex items-center gap-2"><span class="text-xs text-slate-400">${demoData.ongoingTopics.length}</span>${icons.chevronRight}</span>
+            </button>
+            <button onclick="navigateTo('resolvedTopics')" class="w-full flex items-center justify-between py-4 border-b border-slate-100 text-left hover:bg-slate-50 transition-all">
+              <span class="text-slate-700 flex items-center gap-3"><span class="text-green-600">${icons.checkCircle}</span> Resolved Topics</span>
+              <span class="flex items-center gap-2"><span class="text-xs text-slate-400">${demoData.resolvedTopics.length}</span>${icons.chevronRight}</span>
+            </button>
+            
+            <h2 class="font-semibold text-slate-800 mt-6 mb-2">My Progress</h2>
+            <button onclick="navigateTo('informationDiets')" class="w-full flex items-center justify-between py-4 border-b border-slate-100 text-left hover:bg-slate-50 transition-all">
+              <span class="text-slate-700 flex items-center gap-3"><span class="text-blue-600">${icons.pieChart}</span> Information Diets</span>
+              ${icons.chevronRight}
+            </button>
+            <button onclick="navigateTo('weeklyChallenges')" class="w-full flex items-center justify-between py-4 border-b border-slate-100 text-left hover:bg-slate-50 transition-all">
+              <span class="text-slate-700 flex items-center gap-3"><span class="text-amber-600">${icons.target}</span> Weekly Challenges</span>
+              <span class="flex items-center gap-2"><span class="text-xs text-amber-600 font-medium">${demoData.challenges.active.length} active</span>${icons.chevronRight}</span>
+            </button>
+            
+            <h2 class="font-semibold text-slate-800 mt-6 mb-2">About</h2>
+            <button onclick="navigateTo('privacy')" class="w-full flex items-center justify-between py-4 border-b border-slate-100 text-left hover:bg-slate-50 transition-all">
+              <span class="text-slate-700 flex items-center gap-3"><span class="text-slate-600">${icons.lock}</span> Privacy Statement</span>
+              ${icons.chevronRight}
+            </button>
+            <button onclick="navigateTo('aboutUs')" class="w-full flex items-center justify-between py-4 border-b border-slate-100 text-left hover:bg-slate-50 transition-all">
+              <span class="text-slate-700 flex items-center gap-3"><span class="text-violet-600">${icons.info}</span> About PRISM</span>
+              ${icons.chevronRight}
+            </button>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ★★★ NEW: Ongoing Topics page ★★★
+    function renderOngoingTopics() {
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3">
+              <button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button>
+              <h1 class="text-lg font-semibold text-slate-800">Ongoing Topics</h1>
+            </div>
+          </div>
+          <div class="px-5 py-4">
+            <p class="text-slate-500 text-sm mb-4">Events you're actively following</p>
+            <div class="space-y-3">
+              ${demoData.ongoingTopics.map(topic => `
+                <div onclick="showEventDetail()" class="bg-white border border-slate-200 rounded-xl p-4 cursor-pointer hover:shadow-md transition-all">
+                  <div class="flex justify-between items-start mb-2">
+                    <span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs font-medium">ONGOING</span>
+                    <span class="text-xs text-slate-400">${topic.lastUpdate}</span>
+                  </div>
+                  <h3 class="font-semibold text-slate-800 mb-1">${topic.title}</h3>
+                  <p class="text-sm text-slate-500 mb-3">${topic.category}</p>
+                  <div class="flex items-center gap-2">
+                    <div class="flex-1 progress-bar"><div class="progress-fill bg-violet-500" style="width: ${topic.progress}%"></div></div>
+                    <span class="text-xs text-slate-500">${topic.progress}%</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ★★★ NEW: Resolved Topics page ★★★
+    function renderResolvedTopics() {
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3">
+              <button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button>
+              <h1 class="text-lg font-semibold text-slate-800">Resolved Topics</h1>
+            </div>
+          </div>
+          <div class="px-5 py-4">
+            <p class="text-slate-500 text-sm mb-4">Events you've finished exploring</p>
+            <div class="space-y-3">
+              ${demoData.resolvedTopics.map(topic => `
+                <div class="bg-white border border-slate-200 rounded-xl p-4">
+                  <div class="flex justify-between items-start mb-2">
+                    <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium flex items-center gap-1">${icons.check} RESOLVED</span>
+                  </div>
+                  <h3 class="font-semibold text-slate-800 mb-1">${topic.title}</h3>
+                  <p class="text-sm text-slate-500 mb-2">${topic.category}</p>
+                  <div class="flex justify-between text-xs text-slate-400">
+                    <span>Resolved: ${topic.resolvedDate}</span>
+                    <span>${topic.sourcesRead} sources read</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ★★★ NEW: Information Diets page ★★★
+    function renderInformationDiets() {
+      const p = demoData.userProfile;
+      const stats = p.monthlyStats;
+      const sources = p.sourceTypes;
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3">
+              <button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button>
+              <h1 class="text-lg font-semibold text-slate-800">Information Diets</h1>
+            </div>
+          </div>
+          <div class="px-5 py-4">
+            <div class="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-2xl p-5 mb-4 text-white">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <p class="text-white/70 text-sm">Your Diversity Score</p>
+                  <p class="text-4xl font-bold">${p.diversityScore}<span class="text-lg">/100</span></p>
+                </div>
+                <div class="text-right">
+                  <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-300 rounded-full text-xs">
+                    ${icons.trendingUp} +${stats.diversityChange} this month
+                  </span>
+                </div>
+              </div>
+              <p class="text-white/70 text-sm">December 2024</p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4">
+              <h3 class="font-semibold text-slate-800 mb-4">Source Types</h3>
+              <div class="space-y-3">
+                <div>
+                  <div class="flex justify-between text-sm mb-1"><span class="text-slate-600">Legacy Media</span><span class="font-medium text-slate-800">${sources.legacy}%</span></div>
+                  <div class="progress-bar"><div class="progress-fill bg-blue-500" style="width: ${sources.legacy}%"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-sm mb-1"><span class="text-slate-600">Social Media</span><span class="font-medium text-slate-800">${sources.social}%</span></div>
+                  <div class="progress-bar"><div class="progress-fill bg-pink-500" style="width: ${sources.social}%"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-sm mb-1"><span class="text-slate-600">Expert Analysis</span><span class="font-medium text-slate-800">${sources.expert}%</span></div>
+                  <div class="progress-bar"><div class="progress-fill bg-amber-500" style="width: ${sources.expert}%"></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4">
+              <h3 class="font-semibold text-slate-800 mb-4">Political Balance</h3>
+              <div class="flex justify-between text-sm mb-2">
+                <span class="text-blue-600 font-medium">Progressive ${p.politicalBalance.progressive}%</span>
+                <span class="text-red-600 font-medium">Conservative ${p.politicalBalance.conservative}%</span>
+              </div>
+              <div class="h-4 bg-slate-200 rounded-full overflow-hidden flex mb-2">
+                <div class="bg-blue-500" style="width: ${p.politicalBalance.progressive}%"></div>
+                <div class="bg-red-500" style="width: ${p.politicalBalance.conservative}%"></div>
+              </div>
+              <p class="text-center text-green-600 text-sm font-medium">✓ BALANCED (40-60% range)</p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-4">
+              <h3 class="font-semibold text-slate-800 mb-4">This Month's Activity</h3>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="text-center p-3 bg-slate-50 rounded-lg"><p class="text-2xl font-bold text-violet-600">${stats.eventsExplored}</p><p class="text-xs text-slate-500">Events</p></div>
+                <div class="text-center p-3 bg-slate-50 rounded-lg"><p class="text-2xl font-bold text-blue-600">${stats.sourcesRead}</p><p class="text-xs text-slate-500">Sources</p></div>
+                <div class="text-center p-3 bg-slate-50 rounded-lg"><p class="text-2xl font-bold text-green-600">${stats.factChecksViewed}</p><p class="text-xs text-slate-500">Fact-Checks</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ★★★ NEW: Weekly Challenges page ★★★
+    function renderWeeklyChallenges() {
+      const challenges = demoData.challenges;
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3">
+              <button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button>
+              <h1 class="text-lg font-semibold text-slate-800">Weekly Challenges</h1>
+            </div>
+          </div>
+          <div class="px-5 py-4">
+            <h2 class="font-semibold text-slate-800 mb-3 flex items-center gap-2">
+              <span class="text-amber-600">${icons.target}</span> Active Challenges
+            </h2>
+            <div class="space-y-3 mb-6">
+              ${challenges.active.map(c => `
+                <div class="bg-white border border-slate-200 rounded-xl p-4">
+                  <div class="flex justify-between items-start mb-2">
+                    <h3 class="font-semibold text-slate-800">${c.name}</h3>
+                    <span class="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded-full">${c.reward}</span>
+                  </div>
+                  <p class="text-sm text-slate-500 mb-3">${c.description}</p>
+                  <div class="flex items-center gap-3">
+                    <div class="flex-1 progress-bar"><div class="progress-fill bg-amber-500" style="width: ${(c.current/c.target)*100}%"></div></div>
+                    <span class="text-sm font-medium text-slate-700">${c.current}/${c.target} ${c.unit}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <h2 class="font-semibold text-slate-800 mb-3 flex items-center gap-2">
+              <span class="text-green-600">${icons.award}</span> Completed
+            </h2>
+            <div class="space-y-3">
+              ${challenges.completed.map(c => `
+                <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+                  <div class="flex justify-between items-start mb-1">
+                    <h3 class="font-semibold text-green-800 flex items-center gap-2">${icons.check} ${c.name}</h3>
+                    <span class="text-xs text-green-600">${c.reward}</span>
+                  </div>
+                  <p class="text-sm text-green-600 mb-1">${c.description}</p>
+                  <p class="text-xs text-green-500">Completed: ${c.completedDate}</p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ★★★ Privacy Statement page ★★★
+    function renderPrivacy() {
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3">
+              <button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button>
+              <h1 class="text-lg font-semibold text-slate-800">Privacy Statement</h1>
+            </div>
+          </div>
+          <div class="px-5 py-6">
+            <p class="text-slate-600 leading-relaxed mb-6">PRISM is committed to protecting user privacy in accordance with the EU GDPR and other international data protection laws. Our platform is designed around the belief that media literacy tools should empower users rather than influence them.</p>
+            <h3 class="text-lg font-semibold text-slate-800 mt-6 mb-3">What We Collect</h3>
+            <p class="text-slate-600 leading-relaxed mb-4">We collect basic account information such as email address, username, and optional profile photo, along with voluntary preferences such as topics of interest or language to improve our services.</p>
+            <h3 class="text-lg font-semibold text-slate-800 mt-6 mb-3">What We Do Not Collect</h3>
+            <p class="text-slate-600 leading-relaxed mb-4">PRISM intentionally avoids collecting or inferring sensitive data that could compromise user trust, including political affiliation, biometric or financial data, contact lists, or continuous real-time location information.</p>
+            <h3 class="text-lg font-semibold text-slate-800 mt-6 mb-3">Data Sharing</h3>
+            <p class="text-slate-600 leading-relaxed mb-4">We do not sell or trade personal information, nor do we share user data with advertisers, political campaigns, or behavioral profiling services.</p>
+            <h3 class="text-lg font-semibold text-slate-800 mt-6 mb-3">Children's Safety</h3>
+            <p class="text-slate-600 leading-relaxed mb-4">PRISM is not intended for children under the age of 13. We do not knowingly collect personal information from children.</p>
+            <h3 class="text-lg font-semibold text-slate-800 mt-6 mb-3">Your Rights</h3>
+            <p class="text-slate-600 leading-relaxed mb-4">Users have full control over their personal data. At any time, individuals may request access to the information PRISM stores about them.</p>
+            <h3 class="text-lg font-semibold text-slate-800 mt-6 mb-3">Contact</h3>
+            <div class="bg-slate-100 rounded-xl p-4">
+              <p class="font-medium text-slate-800">Nasak Pongsri</p>
+              <p class="text-slate-600 text-sm">Data Protection Officer</p>
+              <a href="mailto:np2945@columbia.edu" class="text-blue-600 text-sm">np2945@columbia.edu</a>
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ★★★ NEW: About PRISM page ★★★
+    function renderAboutUs() {
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3">
+              <button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button>
+              <h1 class="text-lg font-semibold text-slate-800">About PRISM</h1>
+            </div>
+          </div>
+          <div class="px-5 py-6">
+            <div class="text-center mb-8">
+              <div class="inline-flex items-center gap-2 mb-2">
+                <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
+                  <defs><linearGradient id="prismGrad" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#EC4899"/><stop offset="50%" stop-color="#8B5CF6"/><stop offset="100%" stop-color="#06B6D4"/></linearGradient></defs>
+                  <path d="M50 10 L90 80 L10 80 Z" fill="url(#prismGrad)" opacity="0.9"/>
+                </svg>
+                <span class="text-2xl font-bold text-slate-800">PRISM</span>
+              </div>
+              <p class="text-violet-600 font-medium">See The Full Spectrum</p>
+            </div>
+            <div class="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-2xl p-5 mb-4 text-white">
+              <h3 class="font-semibold mb-2">Our Mission</h3>
+              <p class="text-white/90 text-sm leading-relaxed">Combat information fragmentation and polarization by helping users explore news events from multiple perspectives, fostering critical thinking and informed decision-making.</p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4">
+              <h3 class="font-semibold text-slate-800 mb-4">Core Values</h3>
+              <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 flex-shrink-0">🔍</div>
+                  <div><p class="font-medium text-slate-800">Transparency Over Judgment</p><p class="text-sm text-slate-500">We show perspectives, not tell you what to think</p></div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 flex-shrink-0">💪</div>
+                  <div><p class="font-medium text-slate-800">User Empowerment</p><p class="text-sm text-slate-500">Tools for you to make informed decisions</p></div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center text-violet-600 flex-shrink-0">🌈</div>
+                  <div><p class="font-medium text-slate-800">Source Diversity</p><p class="text-sm text-slate-500">Expose you to the full spectrum of coverage</p></div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4">
+              <h3 class="font-semibold text-slate-800 mb-4">What We Offer</h3>
+              <div class="space-y-2 text-sm">
+                <div class="flex items-center gap-2 text-slate-700"><span class="text-green-500">${icons.check}</span> Event-based news aggregation</div>
+                <div class="flex items-center gap-2 text-slate-700"><span class="text-green-500">${icons.check}</span> Source spectrum visualization</div>
+                <div class="flex items-center gap-2 text-slate-700"><span class="text-green-500">${icons.check}</span> Integrated fact-checking</div>
+                <div class="flex items-center gap-2 text-slate-700"><span class="text-green-500">${icons.check}</span> Information diet tracking</div>
+                <div class="flex items-center gap-2 text-slate-700"><span class="text-green-500">${icons.check}</span> Community questions</div>
+              </div>
+            </div>
+            <div class="bg-slate-100 rounded-xl p-4">
+              <h3 class="font-semibold text-slate-800 mb-2">Get in Touch</h3>
+              <p class="text-sm text-slate-600 mb-2">Questions, feedback, or partnerships:</p>
+              <a href="mailto:team@prism-news.com" class="text-blue-600 text-sm font-medium">team@prism-news.com</a>
+            </div>
+            <p class="text-center text-slate-400 text-xs mt-6">PRISM v1.0 • SIPA Capstone Project 2024</p>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ==================== EVENT DETAIL ====================
+
+    function renderEventDetail() {
+      const views = ['overview', 'spectrum', 'journey', 'timeline', 'factcheck', 'questions'];
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3">
+              <button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button>
+              <div class="flex-1">
+                <h1 class="text-lg font-semibold text-slate-800">UHC CEO Shooting</h1>
+                <p class="text-xs text-slate-500">${demoData.event.stats.sources} sources • ${demoData.event.stats.factChecks} fact-checks</p>
+              </div>
+              <button class="p-2 hover:bg-slate-100 rounded-full text-violet-600">${icons.bookmarkFilled}</button>
+            </div>
+          </div>
+          <div class="flex gap-2 px-4 py-3 overflow-x-auto bg-slate-50 hide-scrollbar">
+            ${views.map(view => `
+              <button onclick="setEventView('${view}')" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${eventDetailView === view ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100'}">
+                ${view === 'overview' ? 'Overview' : view === 'spectrum' ? 'Source Spectrum' : view === 'journey' ? 'Info Journey' : view === 'timeline' ? 'Timeline' : view === 'factcheck' ? 'Fact-Checks' : 'Questions'}
+              </button>
+            `).join('')}
+          </div>
+          ${eventDetailView === 'overview' ? renderOverview() : ''}
+          ${eventDetailView === 'spectrum' ? renderSpectrum2D() : ''}
+          ${eventDetailView === 'journey' ? renderInformationJourney() : ''}
+          ${eventDetailView === 'timeline' ? renderTimeline() : ''}
+          ${eventDetailView === 'factcheck' ? renderFactCheck() : ''}
+          ${eventDetailView === 'questions' ? renderCommunityQuestions() : ''}
+        </div>
+        ${renderBottomNav()}
+        ${selectedSource ? renderSourceModal() : ''}
+      `;
+    }
+
+    function renderOverview() {
+      return `
+        <div class="px-4 py-4">
+          <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 mb-4">
+            <span class="inline-block px-2 py-1 bg-amber-500/20 text-amber-400 rounded text-xs font-medium mb-3">ONGOING</span>
+            <h2 class="text-white text-xl font-semibold mb-3">${demoData.event.title}</h2>
+            <p class="text-slate-300 text-sm leading-relaxed">${demoData.event.summary}</p>
+            <div class="flex flex-wrap gap-2 mt-4">
+              ${demoData.event.categories.map(cat => `<span class="px-3 py-1 bg-white/10 text-white/80 rounded-full text-xs">${cat}</span>`).join('')}
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="bg-blue-50 rounded-xl p-4 text-center"><p class="text-2xl font-bold text-blue-600">${demoData.event.stats.sources}</p><p class="text-xs text-blue-600/70">Sources</p></div>
+            <div class="bg-green-50 rounded-xl p-4 text-center"><p class="text-2xl font-bold text-green-600">${demoData.event.stats.factChecks}</p><p class="text-xs text-green-600/70">Fact-Checks</p></div>
+            <div class="bg-violet-50 rounded-xl p-4 text-center"><p class="text-2xl font-bold text-violet-600">4</p><p class="text-xs text-violet-600/70">Chapters</p></div>
+          </div>
+          <h3 class="text-slate-800 font-semibold mb-3">Key Perspectives</h3>
+          <div class="space-y-2">
+            ${[
+              { label: 'Progressive View', color: 'bg-blue-500', text: 'Systemic healthcare failure symptom' },
+              { label: 'Centrist View', color: 'bg-slate-500', text: 'Complex issue requiring nuanced analysis' },
+              { label: 'Conservative View', color: 'bg-red-500', text: 'Violence never justified, rule of law' }
+            ].map(item => `
+              <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                <div class="w-1 h-10 ${item.color} rounded-full"></div>
+                <div><p class="text-sm font-medium text-slate-700">${item.label}</p><p class="text-xs text-slate-500">${item.text}</p></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSpectrum2D() {
+      return `
+        <div class="px-4 py-4">
+          <div class="mb-2"><p class="text-center text-xs text-slate-500 mb-1">Credibility Score (Y) vs Political Lean (X)</p></div>
+          <div class="relative bg-slate-100 rounded-2xl p-4 mb-4" style="height: 320px;">
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-slate-400 whitespace-nowrap" style="transform-origin: center; left: -20px;">Credibility %</div>
+            <div class="absolute inset-4">
+              <div class="absolute w-full border-t border-slate-300 border-dashed" style="top: 0%;"></div>
+              <div class="absolute w-full border-t border-slate-200" style="top: 25%;"></div>
+              <div class="absolute w-full border-t border-slate-200" style="top: 50%;"></div>
+              <div class="absolute w-full border-t border-slate-200" style="top: 75%;"></div>
+              <div class="absolute h-full border-l border-slate-300" style="left: 50%;"></div>
+              <span class="absolute text-xs text-slate-400" style="left: -25px; top: -5px;">100%</span>
+              <span class="absolute text-xs text-slate-400" style="left: -25px; top: 47%;">70%</span>
+              <span class="absolute text-xs text-blue-500" style="left: 0; bottom: -20px;">-10</span>
+              <span class="absolute text-xs text-slate-400" style="left: 50%; transform: translateX(-50%); bottom: -20px;">0</span>
+              <span class="absolute text-xs text-red-500" style="right: 0; bottom: -20px;">+10</span>
+              ${demoData.sources.map(source => {
+                const x = ((source.lean + 10) / 20) * 100;
+                const y = 100 - ((source.credibility - 55) / 45) * 100;
+                return `<div onclick="showSourceDetail('${source.name}')" class="spectrum-dot absolute w-4 h-4 rounded-full border-2 border-white shadow-md" style="left: calc(${x}% - 8px); top: calc(${y}% - 8px); background-color: ${source.color};" title="${source.name}"></div>`;
+              }).join('')}
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 flex justify-between text-xs px-4" style="bottom: -35px;">
+              <span class="text-blue-600 font-medium">← Progressive</span>
+              <span class="text-red-600 font-medium">Conservative →</span>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl p-4 border border-slate-200 mt-8">
+            <h4 class="font-semibold text-slate-800 mb-3">Click any dot to see source details</h4>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-blue-700"></div><span class="text-slate-600">Progressive</span></div>
+              <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-blue-500"></div><span class="text-slate-600">Center-Left</span></div>
+              <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-slate-500"></div><span class="text-slate-600">Centrist</span></div>
+              <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-orange-500"></div><span class="text-slate-600">Center-Right</span></div>
+              <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-red-600"></div><span class="text-slate-600">Conservative</span></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSourceModal() {
+      const source = demoData.sources.find(s => s.name === selectedSource);
+      if (!source) return '';
+      return `
+        <div class="fixed inset-0 bg-black/50 z-50 flex items-end justify-center" onclick="closeSourceModal()">
+          <div class="bg-white rounded-t-3xl w-full max-w-md p-6 animate-fadeInUp" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-start mb-4">
+              <div><h3 class="text-xl font-bold text-slate-800">${source.name}</h3><p class="text-sm text-slate-500">${source.type}</p></div>
+              <button onclick="closeSourceModal()" class="p-2 hover:bg-slate-100 rounded-full">${icons.x}</button>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div class="bg-slate-100 rounded-xl p-3 text-center"><p class="text-2xl font-bold" style="color: ${source.color}">${source.lean > 0 ? '+' : ''}${source.lean}</p><p class="text-xs text-slate-500">Political Lean</p></div>
+              <div class="bg-slate-100 rounded-xl p-3 text-center"><p class="text-2xl font-bold text-slate-800">${source.credibility}%</p><p class="text-xs text-slate-500">Credibility</p></div>
+            </div>
+            <div class="mb-4"><h4 class="font-semibold text-slate-700 mb-1">Framing</h4><p class="text-sm text-slate-600">${source.framing}</p></div>
+            <a href="${source.url}" target="_blank" class="flex items-center justify-between p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-all">
+              <div><p class="font-medium text-blue-700">Visit Source</p><p class="text-xs text-blue-500 truncate" style="max-width: 250px;">${source.url}</p></div>
+              <span class="text-blue-600">${icons.externalLink}</span>
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderInformationJourney() {
+      return `
+        <div class="px-4 py-4">
+          <div class="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl p-4 mb-4 text-white">
+            <h3 class="font-semibold mb-1">Information Flow Analysis</h3>
+            <p class="text-sm text-white/80">Track how this story evolved and spread</p>
+          </div>
+          <div class="relative">
+            <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-violet-500 via-blue-500 to-slate-300"></div>
+            ${demoData.informationJourney.map(item => `
+              <div class="relative flex gap-4 pb-6">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center z-10 ${item.type === 'origin' ? 'bg-red-500' : item.type === 'viral' ? 'bg-orange-500' : item.type === 'breaking' ? 'bg-green-500' : item.type === 'ongoing' ? 'bg-amber-500' : 'bg-blue-500'} text-white text-xs font-bold shadow-lg">${item.sources}</div>
+                <div class="flex-1 bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+                  <div class="flex justify-between items-start mb-1">
+                    <span class="text-xs font-medium px-2 py-0.5 rounded ${item.type === 'origin' ? 'bg-red-100 text-red-700' : item.type === 'viral' ? 'bg-orange-100 text-orange-700' : item.type === 'breaking' ? 'bg-green-100 text-green-700' : item.type === 'ongoing' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}">${item.type.toUpperCase()}</span>
+                    <span class="text-xs text-slate-400">${item.reach}</span>
+                  </div>
+                  <p class="font-medium text-slate-800 text-sm">${item.event}</p>
+                  <p class="text-xs text-slate-500 mt-1">${item.date}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTimeline() {
+      return `
+        <div class="px-4 py-4">
+          ${demoData.chapters.map(ch => `
+            <div class="mb-4">
+              <button onclick="toggleChapter('${ch.id}')" class="w-full flex items-center justify-between p-4 bg-slate-100 rounded-xl">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center ${ch.status === 'ongoing' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}">${ch.status === 'ongoing' ? icons.clock : icons.check}</div>
+                  <div class="text-left"><p class="font-semibold text-slate-800">${ch.title}</p><p class="text-xs text-slate-500">${ch.date}</p></div>
+                </div>
+                ${expandedChapter === ch.id ? icons.chevronUp : icons.chevronDown}
+              </button>
+              ${expandedChapter === ch.id ? `
+                <div class="mt-2 ml-6 border-l-2 border-violet-200 pl-4 space-y-3">
+                  ${ch.events.map(ev => `
+                    <div class="relative">
+                      <div class="absolute -left-6 top-2 w-3 h-3 bg-violet-500 rounded-full border-2 border-white"></div>
+                      <div class="bg-white p-3 rounded-xl shadow-sm">
+                        <span class="text-xs text-violet-600 font-medium">${ev.time}</span>
+                        <p class="font-medium text-slate-800 text-sm">${ev.title}</p>
+                        <p class="text-xs text-slate-500 mt-1">${ev.summary}</p>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderFactCheck() {
+      return `
+        <div class="px-4 py-4">
+          <div class="mb-4 p-4 bg-slate-100 rounded-xl">
+            <div class="flex items-center gap-2 mb-2"><span class="text-violet-600">${icons.shield}</span><span class="font-semibold text-slate-800">Verified Claims</span></div>
+            <p class="text-sm text-slate-600">${demoData.factChecks.length} claims fact-checked by multiple sources</p>
+          </div>
+          <div class="space-y-3">
+            ${demoData.factChecks.map(fc => `
+              <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                <div class="p-4">
+                  <p class="text-sm font-medium text-slate-800 mb-2">"${fc.claim}"</p>
+                  <div class="flex items-center gap-2 mb-2"><span class="px-2 py-1 rounded text-xs font-bold text-white" style="background-color: ${fc.color}">${fc.verdict}</span></div>
+                  <p class="text-xs text-slate-500 mb-2">${fc.explanation}</p>
+                  <div class="flex flex-wrap gap-1">${fc.sources.map(s => `<span class="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded">${s}</span>`).join('')}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCommunityQuestions() {
+      return `
+        <div class="px-4 py-4">
+          <div class="bg-slate-100 rounded-xl p-4 mb-4">
+            <div class="flex items-center gap-2 mb-2"><span class="text-violet-600">${icons.messageCircle}</span><span class="font-semibold text-slate-800">Ask the Community</span></div>
+            <p class="text-sm text-slate-600">Questions get answered when enough people want to know</p>
+          </div>
+          <button class="w-full mb-4 p-4 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-violet-400 hover:text-violet-600 transition-all">+ Ask a question about this event</button>
+          <div class="space-y-3">
+            ${demoData.communityQuestions.map(q => `
+              <div class="bg-white border border-slate-200 rounded-xl p-4">
+                <div class="flex justify-between items-start mb-2">
+                  <span class="text-xs px-2 py-0.5 rounded ${q.status === 'answered' ? 'bg-green-100 text-green-700' : q.status === 'investigating' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}">${q.status === 'answered' ? '✓ ANSWERED' : q.status === 'investigating' ? '🔍 INVESTIGATING' : 'OPEN'}</span>
+                  <span class="text-xs text-slate-400">${q.daysAgo}d ago</span>
+                </div>
+                <p class="text-sm font-medium text-slate-800 mb-3">"${q.text}"</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-slate-500">by @${q.askedBy}</span>
+                  <button class="flex items-center gap-1 px-3 py-1.5 rounded-full ${q.upvotes > 100 ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'} hover:bg-violet-200 transition-all">${icons.thumbsUp}<span class="text-sm font-medium">${q.upvotes}</span></button>
+                </div>
+                ${q.status === 'answered' ? `<a href="#" class="mt-3 block text-sm text-blue-600 hover:underline">→ Read the answer</a>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ==================== EVENT HANDLERS ====================
+
+    function switchTab(tab) { activeTab = tab; currentScreen = tab; render(); }
+    function showEventDetail() { currentScreen = 'eventDetail'; eventDetailView = 'overview'; render(); }
+    function goBack() { currentScreen = activeTab; render(); }
+    function setEventView(view) { eventDetailView = view; render(); }
+    function toggleChapter(id) { expandedChapter = expandedChapter === id ? null : id; render(); }
+    function toggleBookmark(id) { const ev = demoData.bookmarkedEvents.find(e => e.id === id); if (ev) ev.bookmarked = !ev.bookmarked; render(); }
+    function showSourceDetail(name) { selectedSource = name; render(); }
+    function closeSourceModal() { selectedSource = null; render(); }
+    function navigateTo(screen) { currentScreen = screen; render(); }
+
+    // ==================== MAIN RENDER ====================
+
+    function render() {
+      const app = document.getElementById('app');
+      switch(currentScreen) {
+        case 'splash': app.innerHTML = renderSplash(); break;
+        case 'home': app.innerHTML = renderHome(); break;
+        case 'explore': app.innerHTML = renderExplore(); break;
+        case 'upload': app.innerHTML = renderUpload(); break;
+        case 'bookmark': app.innerHTML = renderBookmark(); break;
+        case 'profile': app.innerHTML = renderProfile(); break;
+        case 'eventDetail': app.innerHTML = renderEventDetail(); break;
+        case 'ongoingTopics': app.innerHTML = renderOngoingTopics(); break;
+        case 'resolvedTopics': app.innerHTML = renderResolvedTopics(); break;
+        case 'informationDiets': app.innerHTML = renderInformationDiets(); break;
+        case 'weeklyChallenges': app.innerHTML = renderWeeklyChallenges(); break;
+        case 'privacy': app.innerHTML = renderPrivacy(); break;
+        case 'aboutUs': app.innerHTML = renderAboutUs(); break;
+        default: app.innerHTML = renderHome();
+      }
+    }
+
+    // ==================== INITIALIZE ====================
+    render();
+    setTimeout(() => { currentScreen = 'home'; activeTab = 'home'; render(); }, 3000);
+  </script>
+</body>
+</html>
