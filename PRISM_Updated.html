@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PRISM - See The Full Spectrum</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Krona+One&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: #f8fafc; }
+    .phone-frame { max-width: 390px; margin: 0 auto; min-height: 100vh; background: white; position: relative; overflow-x: hidden; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Enhanced Animations */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(20px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
+    
+    /* Splash Screen Animations */
+    @keyframes prismRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes prismGlow { 0%, 100% { filter: drop-shadow(0 0 15px rgba(139,92,246,0.6)); } 50% { filter: drop-shadow(0 0 35px rgba(139,92,246,0.9)); } }
+    @keyframes prismPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    @keyframes lightBeam { 0% { opacity: 0; transform: translateX(-50px) rotate(-15deg); } 50% { opacity: 1; } 100% { opacity: 0; transform: translateX(50px) rotate(15deg); } }
+    @keyframes textReveal { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+    @keyframes progressFill { 0% { width: 0%; } 100% { width: 100%; } }
+    @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60% { content: '...'; } 80%, 100% { content: '....'; } }
+    @keyframes rainbow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    
+    .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
+    .animate-fadeInUp { animation: fadeInUp 0.6s ease-out forwards; }
+    .animate-slideUp { animation: slideUp 0.4s ease-out forwards; }
+    .animate-scaleIn { animation: scaleIn 0.3s ease-out forwards; }
+    .animate-spin { animation: spin 1s linear infinite; }
+    .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+    .animate-prismGlow { animation: prismGlow 2s ease-in-out infinite, prismPulse 3s ease-in-out infinite; }
+    .animate-toastIn { animation: toastIn 0.3s ease-out forwards; }
+    .animate-toastOut { animation: toastOut 0.3s ease-out forwards; }
+    
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .gradient-prism { background: linear-gradient(135deg, #1e293b 0%, #312e81 40%, #4c1d95 70%, #581c87 100%); }
+    
+    /* Splash specific */
+    .splash-bg { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 30%, #312e81 60%, #4c1d95 100%); }
+    .prism-rainbow { background: linear-gradient(135deg, #f472b6, #a855f7, #6366f1, #22d3ee, #34d399); background-size: 300% 300%; animation: rainbow 4s ease infinite; }
+    .loading-bar { height: 3px; background: linear-gradient(90deg, #7c3aed, #ec4899, #06b6d4, #7c3aed); background-size: 300% 100%; animation: shimmer 1.5s linear infinite; }
+    .dots-animate::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
+    
+    /* Source Spectrum */
+    .spectrum-dot { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+    .spectrum-dot:hover { transform: scale(1.6); z-index: 10; }
+    
+    /* Upload Frame */
+    .upload-frame { border: 2px solid rgba(255,255,255,0.3); border-radius: 20px; position: relative; transition: all 0.3s; cursor: pointer; }
+    .upload-frame:hover { border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.05); transform: scale(1.01); }
+    .upload-frame::before, .upload-frame::after { content: ''; position: absolute; width: 30px; height: 30px; border: 3px solid white; }
+    .upload-frame::before { top: -3px; left: -3px; border-right: none; border-bottom: none; border-radius: 15px 0 0 0; }
+    .upload-frame::after { top: -3px; right: -3px; border-left: none; border-bottom: none; border-radius: 0 15px 0 0; }
+    .corner-bl, .corner-br { position: absolute; width: 30px; height: 30px; border: 3px solid white; bottom: -3px; }
+    .corner-bl { left: -3px; border-right: none; border-top: none; border-radius: 0 0 0 15px; }
+    .corner-br { right: -3px; border-left: none; border-top: none; border-radius: 0 0 15px 0; }
+    
+    /* Progress & Cards */
+    .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+    .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+    .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .card-hover:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
+    .card-hover:active { transform: translateY(-1px); }
+    
+    /* Toast & Modal */
+    .toast-container { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 100; max-width: 340px; width: 90%; pointer-events: none; }
+    .modal-backdrop { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    
+    /* Toggle Switch */
+    .toggle-switch { position: relative; width: 48px; height: 28px; background: #e2e8f0; border-radius: 14px; cursor: pointer; transition: background 0.3s; }
+    .toggle-switch.active { background: #7c3aed; }
+    .toggle-switch::after { content: ''; position: absolute; width: 24px; height: 24px; background: white; border-radius: 12px; top: 2px; left: 2px; transition: transform 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .toggle-switch.active::after { transform: translateX(20px); }
+    
+    /* Analyzing Animation */
+    .analyzing-bar { height: 4px; background: linear-gradient(90deg, #7C3AED, #EC4899, #06B6D4, #7C3AED); background-size: 300% 100%; animation: shimmer 1.2s linear infinite; border-radius: 2px; }
+    
+    /* Krona One for branding */
+    .font-krona { font-family: 'Krona One', sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="app" class="phone-frame"></div>
+  <div id="toast-container" class="toast-container"></div>
+  <script>
+    // ==================== COMPREHENSIVE DATA ====================
+    const demoData = {
+      events: {
+        // ========== UHC CEO SHOOTING (COMPLETE) ==========
+        uhc: {
+          id: "uhc", title: "UnitedHealthcare CEO Brian Thompson Shooting", shortTitle: "UHC CEO Shooting",
+          summary: "Brian Thompson, 50-year-old CEO of UnitedHealthcare, was shot and killed on December 4, 2024, outside the New York Hilton Midtown. Suspect Luigi Mangione (26) was arrested five days later, sparking national debate on healthcare industry practices.",
+          status: "ongoing", categories: ["Healthcare", "Crime", "Corporate"],
+          image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/uhc-shooting.jpeg",
+          color: "from-red-500 to-rose-700",
+          stats: { sources: 47, factChecks: 6, bookmarks: 12847 },
+          chapters: [
+            { id: "ch1", title: "The Shooting", date: "Dec 4, 2024", status: "resolved", events: [
+              { title: "Initial Incident", time: "6:45 AM", summary: "Thompson shot twice outside New York Hilton Midtown before UnitedHealth investor conference." },
+              { title: "Corporate Response", time: "8:00 AM", summary: "UnitedHealth Group cancels investor day. Stock drops 5% in pre-market trading." },
+              { title: "NYPD Investigation", time: "12:00 PM", summary: "Police confirm 'premeditated, targeted attack'. Shell casings found with cryptic messages." }
+            ]},
+            { id: "ch2", title: "The Manhunt", date: "Dec 5-8, 2024", status: "resolved", events: [
+              { title: "Suspect Images Released", time: "Dec 5", summary: "NYPD releases surveillance footage showing suspect's face at hostel." },
+              { title: "Nationwide Search", time: "Dec 6-8", summary: "FBI joins investigation. Reward increased to $60,000. Tips flood in." }
+            ]},
+            { id: "ch3", title: "The Arrest", date: "Dec 9, 2024", status: "resolved", events: [
+              { title: "Mangione Arrested", time: "9:14 AM", summary: "Luigi Mangione arrested at McDonald's in Altoona, PA after customer tip." },
+              { title: "Background Revealed", time: "3:00 PM", summary: "Ivy League graduate from wealthy Baltimore family. 3D-printed gun found." }
+            ]},
+            { id: "ch4", title: "National Debate", date: "Dec 10+", status: "ongoing", events: [
+              { title: "Polarized Reaction", time: "Ongoing", summary: "#FreeLuigi trends on social media. Polls show 53% view him negatively." },
+              { title: "Healthcare Reform Calls", time: "Ongoing", summary: "Renewed national conversation on insurance claim denials and healthcare costs." }
+            ]}
+          ],
+          sources: [
+            { name: "Reuters", lean: 0, credibility: 95, type: "Wire Service", framing: "Factual breaking news coverage focusing on verified facts and timeline", url: "https://www.reuters.com/", color: "#6B7280" },
+            { name: "Associated Press", lean: 0, credibility: 95, type: "Wire Service", framing: "Straight news reporting with official statements", url: "https://apnews.com/", color: "#6B7280" },
+            { name: "BBC News", lean: -1, credibility: 93, type: "International", framing: "Global perspective comparing US healthcare to other systems", url: "https://www.bbc.com/", color: "#6B7280" },
+            { name: "New York Times", lean: -4, credibility: 92, type: "Legacy", framing: "Deep investigation into Mangione's background and healthcare industry practices", url: "https://www.nytimes.com/", color: "#3B82F6" },
+            { name: "Washington Post", lean: -4, credibility: 90, type: "Legacy", framing: "Political implications and corporate accountability analysis", url: "https://www.washingtonpost.com/", color: "#3B82F6" },
+            { name: "NPR", lean: -3, credibility: 90, type: "Public Media", framing: "Healthcare system context and patient advocacy perspective", url: "https://www.npr.org/", color: "#3B82F6" },
+            { name: "CNN", lean: -5, credibility: 78, type: "Cable News", framing: "24/7 breaking coverage with expert commentary panels", url: "https://www.cnn.com/", color: "#2563EB" },
+            { name: "The Atlantic", lean: -6, credibility: 88, type: "Magazine", framing: "Essay examining public frustration with insurance industry", url: "https://www.theatlantic.com/", color: "#2563EB" },
+            { name: "Wall Street Journal", lean: 4, credibility: 91, type: "Business", framing: "Market impact, corporate security, and business implications", url: "https://www.wsj.com/", color: "#F97316" },
+            { name: "The Economist", lean: 3, credibility: 90, type: "International", framing: "Economic and policy analysis of US healthcare market", url: "https://www.economist.com/", color: "#F97316" },
+            { name: "Fox News", lean: 7, credibility: 68, type: "Cable News", framing: "Law and order emphasis, condemning violence and vigilantism", url: "https://www.foxnews.com/", color: "#DC2626" },
+            { name: "National Review", lean: 7, credibility: 76, type: "Conservative", framing: "Rule of law perspective, criticism of violence glorification", url: "https://www.nationalreview.com/", color: "#DC2626" }
+          ],
+          factChecks: [
+            { claim: "UHC denies 32% of all insurance claims", verdict: "MOSTLY TRUE", color: "#D69E2E", explanation: "This figure applies specifically to ACA marketplace plans. Overall denial rates vary by plan type.", sources: ["ValuePenguin", "CMS Data", "KFF Analysis"] },
+            { claim: "Shell casings had 'deny, defend, depose' inscribed", verdict: "PARTIALLY FALSE", color: "#C53030", explanation: "Actual words were 'delay, deny, depose' - a reference to insurance industry tactics from a 2010 book.", sources: ["NYPD Statement", "Reuters", "AP"] },
+            { claim: "Luigi Mangione was personally denied care by UHC", verdict: "UNVERIFIED", color: "#718096", explanation: "No evidence has been found linking Mangione to any UHC claim denial. Investigation ongoing.", sources: ["Court Documents", "FBI", "NYT Investigation"] },
+            { claim: "Majority of Americans support Mangione's actions", verdict: "FALSE", color: "#C53030", explanation: "Multiple polls show 43-61% view him negatively. Only 24% express sympathy.", sources: ["Economist/YouGov Poll", "Rasmussen", "Morning Consult"] },
+            { claim: "Brian Thompson earned over $10 million annually", verdict: "TRUE", color: "#38A169", explanation: "SEC filings confirm $10.2M total compensation in 2023, including salary, bonuses, and stock.", sources: ["SEC Filing", "Bloomberg", "Company Proxy"] },
+            { claim: "The gun used was a 3D-printed 'ghost gun'", verdict: "TRUE", color: "#38A169", explanation: "NYPD and ATF confirmed the firearm was a 3D-printed weapon with no serial number.", sources: ["NYPD Press Conference", "ATF Statement"] }
+          ],
+          journey: [
+            { date: "Dec 4, 6:45 AM", event: "Brian Thompson shot outside NYC Hilton", type: "origin", reach: "Local", sources: 1 },
+            { date: "Dec 4, 8:00 AM", event: "Major news outlets confirm CEO death", type: "official", reach: "National", sources: 15 },
+            { date: "Dec 4, 2:00 PM", event: "Story goes viral; 'Delay Deny Depose' trends", type: "viral", reach: "Global", sources: 100 },
+            { date: "Dec 5", event: "NYPD releases suspect surveillance images", type: "development", reach: "Global", sources: 200 },
+            { date: "Dec 6-8", event: "Nationwide manhunt intensifies", type: "development", reach: "Global", sources: 350 },
+            { date: "Dec 9, 9:14 AM", event: "Luigi Mangione arrested in Pennsylvania", type: "breaking", reach: "Global", sources: 500 },
+            { date: "Dec 10+", event: "Public debate on healthcare system intensifies", type: "ongoing", reach: "Global", sources: 1000 }
+          ],
+          questions: [
+            { id: 1, text: "What's the actual success rate of insurance claim appeals?",upvotes: 234, status: "investigating", askedBy: "PolicyWatcher", daysAgo: 5 },
+            { id: 2, text: "How does UHC's denial rate compare to other major insurers?", upvotes: 189, status: "answered", askedBy: "HealthcareProf", daysAgo: 7 },
+            { id: 3, text: "What legal precedents exist for cases like this?", upvotes: 156, status: "open", askedBy: "LawStudent2024", daysAgo: 3 },
+            { id: 4, text: "How are international media outlets covering this differently?", upvotes: 98, status: "open", askedBy: "GlobalReader", daysAgo: 2 }
+          ]
+        },
+        
+        // ========== RUSSIA-UKRAINE WAR (COMPLETE) ==========
+        russiaUkraine: {
+          id: "russiaUkraine", title: "Russia-Ukraine War: Timeline & Live Updates", shortTitle: "Russia-Ukraine War",
+          summary: "The ongoing military conflict between Russia and Ukraine began with Russia's full-scale invasion on February 24, 2022. Nearly three years later, Russia occupies ~20% of Ukraine, with over 500,000 estimated casualties and 10+ million displaced.",
+          status: "ongoing", categories: ["Warfare", "International", "Politics"],
+          image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/Russia%20Ukraine%20War.jpeg",
+          color: "from-amber-500 to-orange-700",
+          stats: { sources: 156, factChecks: 6, bookmarks: 34521 },
+          chapters: [
+            { id: "ch1", title: "Invasion & Kyiv", date: "Feb-Mar 2022", status: "resolved", events: [
+              { title: "Full-Scale Invasion", time: "Feb 24, 5:00 AM", summary: "Putin announces 'special military operation'. Russian forces cross border from multiple directions." },
+              { title: "Battle for Kyiv", time: "Feb 25 - Mar 30", summary: "Russian forces advance toward capital but face fierce resistance. 40-mile convoy stalls." },
+              { title: "Russian Withdrawal", time: "Apr 2", summary: "Russia retreats from Kyiv region. Bucha massacre discovered, shocking the world." }
+            ]},
+            { id: "ch2", title: "Eastern Front & Counteroffensive", date: "Apr-Dec 2022", status: "resolved", events: [
+              { title: "Siege of Mariupol", time: "Apr-May", summary: "Azovstal steel plant falls after 82-day siege. City devastated." },
+              { title: "Kharkiv Counteroffensive", time: "Sep 2022", summary: "Ukraine liberates most of Kharkiv Oblast in lightning offensive." },
+              { title: "Kherson Liberation", time: "Nov 11", summary: "Ukraine retakes Kherson, the only regional capital Russia captured." }
+            ]},
+            { id: "ch3", title: "Stalemate & Attrition", date: "2023", status: "resolved", events: [
+              { title: "Battle of Bakhmut", time: "Jan-May 2023", summary: "Longest and bloodiest battle. Wagner Group leads assault; city falls in May." },
+              { title: "Failed Counteroffensive", time: "Jun-Nov 2023", summary: "Ukrainian summer offensive gains minimal territory. Zaluzhnyi admits 'stalemate'." },
+              { title: "Wagner Mutiny", time: "Jun 23-24", summary: "Prigozhin's brief march on Moscow. He dies in plane crash two months later." }
+            ]},
+            { id: "ch4", title: "2024-Present", date: "2024-Now", status: "ongoing", events: [
+              { title: "Avdiivka Falls", time: "Feb 17, 2024", summary: "Russia captures strategic eastern city after months of fighting." },
+              { title: "Kursk Offensive", time: "Aug 6, 2024", summary: "Ukraine launches surprise incursion into Russian territory—first since WWII." },
+              { title: "North Korean Troops", time: "Oct-Nov 2024", summary: "10,000+ North Korean soldiers deployed to Russia, confirmed by NATO and US." },
+              { title: "Peace Negotiations", time: "2025", summary: "Trump administration pushes for ceasefire. Terms remain contentious." }
+            ]}
+          ],
+          sources: [
+            { name: "Reuters", lean: 0, credibility: 95, type: "Wire Service", framing: "Factual battlefield reporting with verified casualty figures", url: "https://www.reuters.com/", color: "#6B7280" },
+            { name: "Associated Press", lean: 0, credibility: 95, type: "Wire Service", framing: "On-ground reporting from both sides of the front", url: "https://apnews.com/", color: "#6B7280" },
+            { name: "BBC News", lean: -1, credibility: 93, type: "International", framing: "Comprehensive coverage with visual investigations team", url: "https://www.bbc.com/", color: "#6B7280" },
+            { name: "The Guardian", lean: -5, credibility: 85, type: "Legacy", framing: "Human rights focus, refugee stories, war crimes documentation", url: "https://www.theguardian.com/", color: "#3B82F6" },
+            { name: "Kyiv Independent", lean: -3, credibility: 80, type: "Local", framing: "Ukrainian perspective with extensive on-ground reporting", url: "https://kyivindependent.com/", color: "#3B82F6" },
+            { name: "Al Jazeera", lean: -2, credibility: 82, type: "International", framing: "Global South perspective, questions Western narrative", url: "https://www.aljazeera.com/", color: "#3B82F6" },
+            { name: "DW News", lean: -1, credibility: 85, type: "International", framing: "European perspective, German policy implications", url: "https://www.dw.com/", color: "#6B7280" },
+            { name: "Wall Street Journal", lean: 4, credibility: 91, type: "Business", framing: "Economic sanctions impact, energy market analysis", url: "https://www.wsj.com/", color: "#F97316" },
+            { name: "The Economist", lean: 3, credibility: 90, type: "International", framing: "Strategic analysis, long-term geopolitical implications", url: "https://www.economist.com/", color: "#F97316" },
+            { name: "Fox News", lean: 7, credibility: 68, type: "Cable News", framing: "US policy criticism, defense spending debates, aid scrutiny", url: "https://www.foxnews.com/", color: "#DC2626" }
+          ],
+          factChecks: [
+            { claim: "Russia has lost over 300,000 soldiers", verdict: "UNVERIFIED", color: "#718096", explanation: "Western estimates range from 200,000-400,000. Russia doesn't publish official figures. UK MoD estimates ~350,000 casualties.", sources: ["UK Ministry of Defence", "US Intelligence", "Mediazona"] },
+            { claim: "Ukraine has received $175 billion in Western aid", verdict: "MOSTLY TRUE", color: "#D69E2E", explanation: "Cumulative commitments approach this figure (~$175B US + $197B EU). Actual disbursements are lower.", sources: ["Kiel Institute", "US Congress", "EU Commission"] },
+            { claim: "NATO promised not to expand eastward", verdict: "FALSE", color: "#C53030", explanation: "No such promise was ever made in writing. Gorbachev himself denied this claim in a 2014 interview.", sources: ["NATO Archives", "Gorbachev Interview 2014", "Der Spiegel"] },
+            { claim: "Bucha massacre was staged by Ukraine", verdict: "FALSE", color: "#C53030", explanation: "Multiple independent investigations (NYT, Bellingcat, UN, ICC) confirmed Russian responsibility through satellite imagery and forensics.", sources: ["UN Human Rights", "NYT Visual Investigations", "ICC"] },
+            { claim: "Ukraine operates US bioweapons labs", verdict: "FALSE", color: "#C53030", explanation: "Debunked by UN, WHO, and independent scientists. Labs were for disease surveillance under Biological Threat Reduction Program.", sources: ["UN Security Council", "WHO", "Bulletin of Atomic Scientists"] },
+            { claim: "North Korean troops are fighting in Russia", verdict: "TRUE", color: "#38A169", explanation: "Confirmed by US, NATO, and South Korea. 10,000+ troops deployed to Kursk region starting October 2024.", sources: ["Pentagon", "NATO", "South Korean Intelligence"] }
+          ],
+          journey: [
+            { date: "Feb 24, 2022", event: "Russia launches full-scale invasion of Ukraine", type: "origin", reach: "Global", sources: 500 },
+            { date: "Mar 2022", event: "Russian forces retreat from Kyiv after fierce resistance", type: "development", reach: "Global", sources: 600 },
+            { date: "Apr 3, 2022", event: "Bucha massacre discovered; global outrage", type: "breaking", reach: "Global", sources: 800 },
+            { date: "Sep 2022", event: "Ukraine liberates Kharkiv Oblast in counteroffensive", type: "development", reach: "Global", sources: 500 },
+            { date: "Nov 2022", event: "Ukraine retakes Kherson city", type: "breaking", reach: "Global", sources: 600 },
+            { date: "Jun 2023", event: "Wagner mutiny shocks Russia; Prigozhin marches toward Moscow", type: "breaking", reach: "Global", sources: 700 },
+            { date: "Aug 2024", event: "Ukraine launches Kursk incursion into Russian territory", type: "breaking", reach: "Global", sources: 500 },
+            { date: "Oct 2024", event: "North Korean troops confirmed in Russia", type: "development", reach: "Global", sources: 400 }
+          ],
+          questions: [
+            { id: 1, text: "What are realistic scenarios for ending this war?", upvotes: 456, status: "open", askedBy: "GeopoliticsNerd", daysAgo: 3 },
+            { id: 2, text: "How effective have Western sanctions been on Russia's economy?", upvotes: 312, status: "answered", askedBy: "EconWatcher", daysAgo: 10 },
+            { id: 3, text: "What is the actual death toll on both sides?", upvotes: 278, status: "investigating", askedBy: "DataAnalyst", daysAgo: 5 },
+            { id: 4, text: "How are neutral countries like India and China positioning themselves?", upvotes: 198, status: "open", askedBy: "GlobalObserver", daysAgo: 7 }
+          ]
+        },
+        
+        // ========== AI BUBBLE DEBATE (COMPLETE) ==========
+        aiBubble: {
+          id: "aiBubble", title: "Is AI a Bubble or Not?", shortTitle: "AI Bubble Debate",
+          summary: "The debate over whether the AI investment boom represents a sustainable technological revolution or a speculative bubble. With $400B+ in annual AI spending and valuations reaching historic highs, experts are divided on whether this is dot-com 2.0 or genuine transformation.",
+          status: "ongoing", categories: ["Technology", "Finance", "Business"],
+          image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Is%20AI%20a%20Bubble.jpeg",
+          color: "from-cyan-500 to-blue-700",
+          stats: { sources: 67, factChecks: 6, bookmarks: 8934 },
+          chapters: [
+            { id: "ch1", title: "ChatGPT Era Begins", date: "Nov 2022 - Jan 2023", status: "resolved", events: [
+              { title: "ChatGPT Launches", time: "Nov 30, 2022", summary: "OpenAI releases ChatGPT. Becomes fastest-growing app ever—100M users in 2 months." },
+              { title: "Microsoft's $10B Bet", time: "Jan 2023", summary: "Microsoft invests $10 billion in OpenAI, integrating AI into all products." }
+            ]},
+            { id: "ch2", title: "Investment Frenzy", date: "2023", status: "resolved", events: [
+              { title: "Nvidia's Meteoric Rise", time: "2023", summary: "Nvidia stock rises 240%. Company becomes AI infrastructure backbone." },
+              { title: "AI Arms Race", time: "2023", summary: "Google (Bard), Meta (LLaMA), Anthropic (Claude) all launch competing models." },
+              { title: "Record VC Funding", time: "2023", summary: "$95 billion invested in AI startups—record for any sector." }
+            ]},
+            { id: "ch3", title: "DeepSeek Shock", date: "Jan 2025", status: "resolved", events: [
+              { title: "Chinese Breakthrough", time: "Jan 27, 2025", summary: "DeepSeek AI launches model matching GPT-4 at fraction of cost. Market panics." },
+              { title: "Nvidia Crashes 17%", time: "Jan 27, 2025", summary: "Nvidia loses $600B in one day—largest single-day loss in stock market history." },
+              { title: "Recovery Begins", time: "Jan 28, 2025", summary: "Nvidia rebounds 8.8%. Debate intensifies over AI valuations." }
+            ]},
+            { id: "ch4", title: "Bubble or Boom?", date: "2025", status: "ongoing", events: [
+              { title: "MIT Report", time: "Aug 2025", summary: "MIT study finds '95% of organizations get zero ROI' from GenAI investments." },
+              { title: "Circular Financing Concerns", time: "Ongoing", summary: "Nvidia invests $100B in OpenAI. OpenAI buys Nvidia chips. Critics call it artificial demand." },
+              { title: "$500B OpenAI Valuation", time: "Oct 2025", summary: "OpenAI valuation triples to $500B despite losing billions annually." }
+            ]}
+          ],
+          sources: [
+            { name: "MIT Technology Review", lean: -2, credibility: 92, type: "Tech", framing: "Technical analysis of AI capabilities and limitations", url: "https://www.technologyreview.com/", color: "#3B82F6" },
+            { name: "Bloomberg", lean: 2, credibility: 88, type: "Business", framing: "Investment flows, market impact, deal analysis", url: "https://www.bloomberg.com/", color: "#F97316" },
+            { name: "The Economist", lean: 3, credibility: 90, type: "International", framing: "Balanced economic analysis comparing to historical bubbles", url: "https://www.economist.com/", color: "#F97316" },
+            { name: "Wall Street Journal", lean: 4, credibility: 91, type: "Business", framing: "Market analysis, corporate strategy, investor perspective", url: "https://www.wsj.com/", color: "#F97316" },
+            { name: "Wired", lean: -4, credibility: 82, type: "Tech", framing: "Critical tech journalism, questions industry hype", url: "https://www.wired.com/", color: "#3B82F6" },
+            { name: "Financial Times", lean: 2, credibility: 89, type: "Business", framing: "Global finance perspective, European regulatory angle", url: "https://www.ft.com/", color: "#F97316" },
+            { name: "The Verge", lean: -3, credibility: 80, type: "Tech", framing: "Consumer tech focus, startup culture analysis", url: "https://www.theverge.com/", color: "#3B82F6" },
+            { name: "NPR", lean: -3, credibility: 90, type: "Public Media", framing: "Skeptical analysis, labor impact, economic inequality angle", url: "https://www.npr.org/", color: "#3B82F6" },
+            { name: "Reuters", lean: 0, credibility: 95, type: "Wire Service", framing: "Factual market reporting and deal coverage", url: "https://www.reuters.com/", color: "#6B7280" },
+            { name: "CNBC", lean: 3, credibility: 75, type: "Business TV", framing: "Pro-market perspective, CEO interviews, bullish analysis", url: "https://www.cnbc.com/", color: "#F97316" }
+          ],
+          factChecks: [
+            { claim: "AI will replace 300 million jobs globally", verdict: "UNVERIFIED", color: "#718096", explanation: "Goldman Sachs estimate is speculative and heavily contested by labor economists. Actual impact depends on policy and adoption speed.", sources: ["Goldman Sachs", "ILO", "MIT Work of the Future"] },
+            { claim: "95% of organizations see zero ROI from GenAI", verdict: "TRUE", color: "#38A169", explanation: "MIT study from August 2025 found vast majority of $30-40B enterprise AI investment showing no measurable returns.", sources: ["MIT Report Aug 2025", "Bain & Company"] },
+            { claim: "AI capex investment exceeds the dot-com bubble", verdict: "TRUE", color: "#38A169", explanation: "AI investment as share of GDP is ~1/3 higher than internet investment during dot-com peak. ~$400B annually from big tech alone.", sources: ["BlackRock Analysis", "Bureau of Economic Analysis"] },
+            { claim: "OpenAI is profitable", verdict: "FALSE", color: "#C53030", explanation: "OpenAI loses billions annually. Expected $5B loss in 2024 on $3.7B revenue. No clear path to profitability.", sources: ["The Information", "NYT", "Company Statements"] },
+            { claim: "Current AI valuations are justified by revenue", verdict: "DEBATED", color: "#D69E2E", explanation: "S&P 500 tech trades at ~23x forward earnings vs 55x during dot-com. But many AI startups have minimal revenue.", sources: ["BlackRock", "Goldman Sachs", "Morgan Stanley"] },
+            { claim: "Nvidia-OpenAI deal is circular financing", verdict: "DEBATED", color: "#D69E2E", explanation: "Nvidia invests $100B in OpenAI; OpenAI buys Nvidia chips. Critics call it artificial demand. Defenders say it's standard industry practice.", sources: ["Bloomberg", "NPR", "Yale Insights"] }
+          ],
+          journey: [
+            { date: "Nov 30, 2022", event: "ChatGPT launches, sparks global AI frenzy", type: "origin", reach: "Global", sources: 100 },
+            { date: "Jan 2023", event: "Microsoft invests $10B in OpenAI", type: "development", reach: "Global", sources: 200 },
+            { date: "May 2023", event: "Nvidia stock up 200%+ YTD; AI 'arms race' accelerates", type: "viral", reach: "Global", sources: 500 },
+            { date: "Nov 2023", event: "OpenAI board crisis; Altman fired then reinstated in 5 days", type: "breaking", reach: "Global", sources: 600 },
+            { date: "Jan 2025", event: "DeepSeek launch crashes Nvidia 17%; bubble fears spike", type: "breaking", reach: "Global", sources: 800 },
+            { date: "Aug 2025", event: "MIT report: '95% of AI investments show zero ROI'", type: "analysis", reach: "Global", sources: 300 },
+            { date: "Oct 2025", event: "OpenAI valued at $500B despite losing billions", type: "development", reach: "Global", sources: 400 }
+          ],
+          questions: [
+            { id: 1, text: "When will AI companies actually become profitable?", upvotes: 289, status: "open", askedBy: "InvestorMike", daysAgo: 5 },
+            { id: 2, text: "How does current AI investment compare to dot-com bubble?", upvotes: 234, status: "answered", askedBy: "TechHistorian", daysAgo: 12 },
+            { id: 3, text: "Is circular financing between AI companies sustainable?", upvotes: 198, status: "investigating", askedBy: "FinanceSkeptic", daysAgo: 8 },
+            { id: 4, text: "What percentage of AI startups will survive the next 5 years?", upvotes: 156, status: "open", askedBy: "VCWatcher", daysAgo: 3 }
+          ]
+        }
+      },
+      
+      exploreEvents: [
+        { id: "uhc", title: "UnitedHealthcare CEO Shooting", category: "Healthcare", sources: 47, color: "from-red-500 to-rose-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/uhc-shooting.jpeg" },
+        { id: "russiaUkraine", title: "Russia-Ukraine War: Live Updates", category: "Warfare", sources: 156, color: "from-amber-500 to-orange-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/Russia%20Ukraine%20War.jpeg" },
+        { id: "aiBubble", title: "Is AI a Bubble or Not?", category: "Technology", sources: 67, color: "from-cyan-500 to-blue-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Is%20AI%20a%20Bubble.jpeg" },
+        { id: "israelPalestine", title: "Israel-Palestine Conflict", category: "Warfare", sources: 203, color: "from-slate-500 to-slate-800", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/israels-gaza.png" },
+        { id: "abortion", title: "US Abortion Rights Debate", category: "Politics", sources: 89, color: "from-pink-500 to-rose-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Debate%20on%20US's%20Abortion.jpeg" },
+        { id: "hongKong", title: "Hong Kong Apartment Fire", category: "Current News", sources: 28, color: "from-orange-500 to-red-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Facts%20of%20Hong%20Kong.jpeg" }
+      ],
+      
+      trendingEvents: [
+        { id: "uhc", title: "UHC CEO Shooting", category: "Healthcare", color: "from-red-500/30 to-slate-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/uhc-shooting.jpeg" },
+        { id: "aiBubble", title: "AI Bubble Debate", category: "Technology", color: "from-blue-500/30 to-slate-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Is%20AI%20a%20Bubble.jpeg" },
+        { id: "russiaUkraine", title: "Russia-Ukraine War", category: "Warfare", color: "from-amber-500/30 to-slate-700", image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/Russia%20Ukraine%20War.jpeg" }
+      ],
+      
+      userProfile: {
+        name: "Laura Samson", level: 43, diversityScore: 67, factChecks: 320,
+        badges: [{ name: "Fact-Check Champion", icon: "✓", color: "#7C3AED" }, { name: "Balanced Thinker", icon: "⚖️", color: "#7C3AED" }],
+        politicalBalance: { progressive: 58, conservative: 42 },
+        monthlyStats: { eventsExplored: 23, sourcesRead: 156, factChecksViewed: 47, diversityChange: 13 },
+        sourceTypes: { legacy: 65, social: 25, expert: 10 }
+      },
+      
+      ongoingTopics: [
+        { id: "uhc", title: "UnitedHealthcare CEO Shooting", category: "Healthcare", lastUpdate: "2 hours ago", progress: 75 },
+        { id: "russiaUkraine", title: "Russia-Ukraine War", category: "Warfare", lastUpdate: "30 min ago", progress: 45 },
+        { id: "aiBubble", title: "AI Bubble Debate", category: "Technology", lastUpdate: "1 day ago", progress: 60 }
+      ],
+      
+      resolvedTopics: [
+        { id: 1, title: "2024 US Presidential Election", category: "Politics", resolvedDate: "Nov 6, 2024", sourcesRead: 89 },
+        { id: 2, title: "OpenAI Leadership Crisis", category: "Technology", resolvedDate: "Nov 22, 2023", sourcesRead: 45 }
+      ],
+      
+      challenges: {
+        active: [
+          { id: 1, name: "Opposite Day", description: "Read perspectives opposite to your usual preferences", current: 5, target: 7, unit: "days", reward: "50 XP" },
+          { id: 2, name: "Expert Explorer", description: "Read analyses from verified experts", current: 6, target: 10, unit: "articles", reward: "30 XP" },
+          { id: 3, name: "Fact-Check First", description: "View fact-checks before sharing", current: 8, target: 10, unit: "times", reward: "25 XP" }
+        ],
+        completed: [
+          { id: 1, name: "Balanced Thinker", description: "Maintain 40-60% balance", completedDate: "Nov 28, 2024", reward: "Badge + 100 XP" },
+          { id: 2, name: "Fact-Check Champion", description: "View 50+ fact-checks", completedDate: "Nov 15, 2024", reward: "Badge + 75 XP" }
+        ]
+      },
+      
+      bookmarkedEvents: [
+        { id: "uhc", title: "UnitedHealthcare CEO Shooting", category: "Healthcare", bookmarked: true, image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/uhc-shooting.jpeg" },
+        { id: "russiaUkraine", title: "Russia-Ukraine War", category: "Warfare", bookmarked: true, image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/refs/heads/main/Russia%20Ukraine%20War.jpeg" },
+        { id: "aiBubble", title: "AI Bubble Debate", category: "Technology", bookmarked: true, image: "https://raw.githubusercontent.com/jackkang0530/TPI_Emerging-Tech/4b091a8603b1451fef3f4545ff8660c72bc9f9a2/Is%20AI%20a%20Bubble.jpeg" }
+      ],
+      
+      categories: ['All', 'Politics', 'Technology', 'Healthcare', 'Warfare', 'Current News'],
+      
+      settings: {
+        darkMode: false,
+        notifications: { breaking: true, factChecks: true, weekly: false },
+        textSize: 'medium'
+      }
+    };
+
+    // ==================== STATE ====================
+    let currentScreen = 'splash';
+    let activeTab = 'home';
+    let currentEventId = 'uhc';
+    let expandedChapter = 'ch1';
+    let eventDetailView = 'overview';
+    let selectedSource = null;
+    let selectedCategory = 'All';
+    let searchQuery = '';
+    let isSearchOpen = false;
+    let uploadState = 'idle';
+    let showQuestionModal = false;
+    let isEditingBookmarks = false;
+    let splashProgress = 0;
+
+    // ==================== ICONS ====================
+    const icons = {
+      home: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>`,
+      globe: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>`,
+      upload: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
+      bookmark: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>`,
+      bookmarkFilled: `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>`,
+      user: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+      search: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+      chevronRight: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>`,
+      chevronDown: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 12,15 18,9"/></svg>`,
+      chevronUp: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18,15 12,9 6,15"/></svg>`,
+      arrowLeft: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>`,
+      arrowUp: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>`,
+      check: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>`,
+      clock: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>`,
+      shield: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+      externalLink: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`,
+      messageCircle: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>`,
+      thumbsUp: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>`,
+      lock: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`,
+      x: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+      image: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>`,
+      link: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>`,
+      file: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>`,
+      folder: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>`,
+      checkCircle: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>`,
+      pieChart: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 118 2.83"/><path d="M22 12A10 10 0 0012 2v10z"/></svg>`,
+      target: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+      info: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
+      award: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21,13.89 7,23 12,20 17,23 15.79,13.88"/></svg>`,
+      trendingUp: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/><polyline points="17,6 23,6 23,12"/></svg>`,
+      loader: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`,
+      plus: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+      send: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>`,
+      settings: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>`,
+      bell: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>`,
+      moon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>`,
+      type: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4,7 4,4 20,4 20,7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>`
+    };
+
+    // ==================== TOAST ====================
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const colors = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-violet-500' };
+      const icons = { success: '✓', error: '✗', info: 'ℹ' };
+      const toast = document.createElement('div');
+      toast.className = `${colors[type]} text-white px-4 py-3 rounded-xl shadow-lg animate-toastIn flex items-center gap-3 mb-2`;
+      toast.innerHTML = `<span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm">${icons[type]}</span><span class="text-sm font-medium">${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => { toast.classList.remove('animate-toastIn'); toast.classList.add('animate-toastOut'); setTimeout(() => toast.remove(), 300); }, 2500);
+    }
+
+    // ==================== SPLASH SCREEN ====================
+    function renderSplash() {
+      return `
+        <div class="fixed inset-0 flex flex-col items-center justify-center overflow-hidden" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #1a1a3e 50%, #2d1b4e 75%, #4a2c6a 100%);">
+          <!-- Subtle Background Glow Effects -->
+          <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-1/4 left-1/3 w-96 h-96 bg-blue-900/30 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-800/25 rounded-full blur-3xl"></div>
+          </div>
+          
+          <!-- Main Content -->
+          <div class="relative z-10 flex flex-col items-center px-8">
+            
+            <!-- Logo + PRISM Text Row -->
+            <div class="flex items-center gap-4 mb-6" style="animation: textReveal 0.8s ease-out 0.3s both;">
+              <!-- Prism Logo -->
+              <div class="animate-prismGlow">
+                <img src="data:image/png;base64,UklGRuIqAABXRUJQVlA4WAoAAAAwAAAAIwMA9wIASUNDUMgBAAAAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADZBTFBI5goAAAHwh23bMTfb/z3XpBPjth1USR1nHDtlUve2bdt36t62bdu279pm6qTZ/6hnrjnP4ziuZ1nOiJiA/xn/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv//1/hCU6IYQg5IIB5zocWAHc5HZoBYLXT4bvtMNHZMBA7jnU0YOdOhiG70OhgwK7GOBZadukNp0Iddj3NoYDd/NSZULM7aHYktO8WnAj12P2XHQjYk4mOg2F75COnQSn2bKLDYMse+sRZUIY93ego2LrH4CQYij1/r3OgK/amc+CsvfKwU2Aw9m68QwB7ea0zYPDegs8RgL3vBBgdBvfIvyKEo/z7NiyelH5DEZ5e4Ycw3ST7msMFTaIP4Sv5Tg+jB+VeFcJZ7m0Kqxek3lCEd5XQQ5h3yryx4YYJEq8fwl/iXRcBj8q7CkRikrhri4jPpN0oROYwYYdIlXWnRczDkq4MkZso6P6NoJfk3HBEclDMdUZUm5Q7FZHdLOQQ6TLugoi7T8LVI/LjBFyHDbwg34bBDkPibYsttEm3s2CPt8i2FNilbLvNNh6VbMNgn6mCrdNG3pZrJ8FOK8Qa7FWq3Wgz02RaJezWLdJm287jEm007DdFoMGGZ8mz0+0Ig8QZ7DlWmN1uU0/KsirYdaooW2Zb70iyZth3SJBttLFVcuxs2PkVUmw/2HsXITbJ5u6VYQ2w+0QRttT2XpNgJ8P+fQKsIwp0yK+bEQ0nS6+TEB0ThNeiKPGc7JqMaLmf5MpC1JwuuI5FFG2QW69Gk20uqZWFqHqf1LonuiBFaCHKviizpkYbBEQWou4CiXVb9EGTvEpCFO50SasuiMr3SqvPoxNSZFU6ovRboir232iFKkFlTUTUXi2oDtoUvXCzmHJNQDR3CSnrDET1+4VUFqJ8gohyvRXtXhNRHkT9gIByz4h+mwTUqVDAieLpsA4VgFs4ub6AEj4knAJQxDTRFLdGFaZLJut5KGOtYApAIV1iKfZ3lXhALI2CUiYKpf3Wq8XrMsm1DIpZI5JOgGq2SST3VuVAq0A6HQqaJo6StqjIS+LoPSjp/sIoEWr6oTA6T1EwRBQlQFndkugOdXlQEPWFwiaJIetPlXlRDB3coTLYVwhZk6C0S4TQgZvVBkNFkDUJqiuCsqG8UwSQNUF9kCx/DtmkQK+Ln5h3oMIh6VMIJW4TPgnz1AgjZc/tUGW35NkfyvyM5HlOnbCv3BkAhf5Q7LhWqBRapE4e1DpW5rh+UKznZY4Hqp0icWIXKtebAsd6HOp9sLw5HAq+VN7cpmJokTaHQs1jZU2XhYr2iqypharvI2nc05XtM0lzK9S9Rs6krle4djkzASo/TsocBrV3yxjrTcV7UcYcB9VPlDCu95XvdQkzCOrvky9JbRqwWrxYV0AHb5UuBVu1AJZsifkVeviMbKnepglIkCzJ30MX3xYssZdCH8vFijV6mUZsECvZb0Mn7xIqrgvXagUSZEqPT6CXL4kU1xUbNAPJEiXjC+jmnxJl0AbtQLk8SZwMDRUnVuUyHZkmTY55C1pqCRPPKj15RJa4LoCmDhAl3efrynxJcsjr0Nar5EjMRdDXbXIka4nG4A4pkvoItDZWhrjP6tSb52VI7ixobn8Jcvjj0N15AiT1AejvJeLDOmuLBrWLj/rl0OEJwiN+CfQ4VnacBE3+XnQcB232CI6Ymfq0Tm5YTdDoiWJj3206BUtoWDdBq+8TGodCs3vJjOd063eRkQTtLpYY1+vXEoGR2qFfuE5cWP9Bx8VFObT8AWERA03vLStadO1vUZHcqWu4QFJcCm3fLCgOWaVvmCAm3HOg8zFS4hpo/SNC4ugOvUOeiHB9D81fJCJC0P6rBIT1nf61C4gcEGCreIhvpwAcJx2eAwl+Ixy6gQi9oiFuKRWsFQ2PgQxvEwz7gxAtsWB9TwlPiIUjQIqFUuEFWpguFJK30AKukAmtoEaRsF87OdwgEYaDHgVC6lyCuEccWC+DIvtIg1NBknOFQS2I8mpRsA/IUhJYr9HFFEFwGAgzTgxYr1DGN2KgH0izVAjEttPGZiFwAYhzigiIA3l2kQCD6eN+AZCwmT6Qy38TQaAz2a83SPRC5jsYRMp77g+oZDLr+UCm8YwX8wSdPMp4x7XRCQrYrsuTINTVbHdoO6XgWqazzgWtMt2hW4jlIZazLge1JnDcPuvI5QuOOwf0WsJvaW0Es4HfckGxt7PbKSQDbjtsLs08wmqJzdNBtHmMFrsJZDud0Z4F4ZayWRYodyuXuf4hHdzFZLUgXh6L7aSeJ1jsNpBvMYN1A/3O5C/rNQLCxex1aAcFgbus50HCrcyV3U5D4C3XqyDie1irH8i4H2O5p9PRMr5y/QJCvp6tzgEpc5VrDS1NZKqTQMwWS8WDmr9mqdvJCXkctYie1jBUHAj6cn66gqLATyDpVm66gabQjZlA1P/w0sVUhdM5KRF0zUmnEdYNfFQHyuajWaR1JxcNBm1nMtFi4lrAQ2NB3RdzUH/QNwe9TWDX8U8FKJx/FpDYF9wzCDQ+gHlWEtl63hkJKr+Cc3qBzjlnBqHdwTc+UHo628wjtb+5pgK0fhrTbCa2Dp5pBrWfzzF9QO8cM5/gruOXalD80eyymuQWc8sg0Py1vJIJqu/CKpeT3XhOyQXdxzHKIsL7m08qQfl+NllOelstJmkA7bfySCaoP5FFniW/ezikL+i/kEEWMMBK/giBA0vZYxULgDuawIN38kYfcGEKa8xlg3s5oy/4MJcxFjLCCr4IghOvZIvNrIB4phgEXhzPEzngxkSWWMgOkzgiD/xYxBBLGQL8UA2OvJ4bDgVPupnheaa4kxe84Mo0VljEFnM5YQD40ssISxgDfFAFzryRCzLBm4lMsJg5pvGAH9yZzwLL2WMdBxSAP29igA4GQRz5DQWHTqW+nuDRROJbwySP0V41uLSM9NazCdyEVw4+nUZ3B4BTU8juZFZ5kOoKwKsHE10bs4DmKsGtdSS3gV0QQ3Cl4Nep9NYDHJtAbotZZhK19QLP5hPbOqbZRGsV4NpiUgPfUloF40ykswxwbjyZLWediVRWAt71EFkn88AisXpwbyuFHQD+dRHYSAa6h76KwMFu8lrPQk9Rlx88XElc4OJE0mpiow8pqx/4+ADCeoSRHqOrCnByE1m1s9JyqvKAlyuJ6g9maieqnrll9U1NTY31tdWVZUFvYf6Avr16du+WlZmRkZ6eftxO09MzMjKzunbt1r1Hj547zM7Ozs7Jyem1w5ycnjnZ2Tk5vXr36dO3b99+/fr167/9gJ3n5ubm5u04f48W7GLh9kVFxcUlJR6Px+PdoW/XvZ6S4qLC/Pqmpob6utramurq6pqamtraurr6+oaGxsampoGDBg0ePGTo0GHDmpubW1qGjxgxctTo0WPGjh03bty443c8bqdjdzomIsfueNyeHrvDMduP3n5UbU1tdU1NTVVVRWV5RXlZqDQY9Af8Po+nqLigIK+gsLCouLikxOP1+fyBUGlZWXl5xQ5DgUAwFAqFgsGA3+/z+fw+n9fn9Xn9Pr8/GAwFg4FgIOD1lnhKivM9RGX8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/G/8b/xv/B/FAVZQOCAGHgAA8AABnQEqJAP4Aj5RKJJGo6KhoSDxiHBwCglnbvwE+cXQGtlnTpvm4+Kf0wZzuc9pj2tatNNQeWBe0P6b7fvfvu/+1482vfPu59/5X95/LD5Y+jLzCP1i6eP7r+oTzmPTr/SvUA/ZX//9iR6AHlyfuF8LH9W/5/7m+2l6gHoAcBn+I36EeEL8hP2q+O7gySTce7Tf3bL5BrMlOUzy9DV/HR+e/672A/5L/b/S09ff7m+wV+xn//B+VNfEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn18RB59fEQefXxEHn15rUS5AQins8We0+hNntPoTZ7T6E2e0+hNmZx4yTsC6fOyYM4V+eE2e0+hNntPoTZ7T6E2e0+hNntPm2Vo8ROJaEpUQMyXVdYGCygqa+Ig8+viIPPr4iDz6+Ig8+viIKmnnHYu1augqRUu5vuK6LT6mviIPPr4iDz6+Ig8+viIPPr4Fq5nVrRhf/iv4fR4/al5Y0n6EuSqipr4iDz6+Ig8+viIPPr4iDz6+H45Q5YN0bQQm1Lpw/zZwlQBqh0/MbnjvG/p59fEQefXxEHn18RB59fEQefXm4sJ1llyi63t3FPVOuOR/GO42+hJtqHBuBwWNITM50+hNntPoTZ7T6E2e0+hNntMc+6eSQzp1m9MnDChIgnHonNR+uGwAjXDv7Kbsk8X50Dky3rQmz2n0Js9p9CbPafQmz2n0JWZu0ITclCu0YI6UEb2bx+HogOz7f8gYKuZ5U4eLjuu2bDv+zPl59fEQefXxEHn18RB59fEQdvPtA34UYme8eycj7b0ZQPo/0OwzTcDbXXuOcui7zqs8We0+hNntPoTZ7T6E2e0+gsqlQupXlhM+KD+wsKWUxZqqjgrva0b2FC/dJ2Wufl3BZGbrotPqa+Ig8+viIPPr4iDz6+H7GsLsutQQ39ELNGsDRolZ/WwDg0kO47uAUl4iYHCk9kJmG7T6E2e0+hNntPoTZ7T6E1hlDSI3XCIqW1mJksgRRskTefkKr6jYVhFfvBEzwtVfHwWIuC2y+ncN+OIeEDfQmz2n0Js9p9CbPafQmsKkFXwYuaAz6lI70LUgGmhOqN32pMTUzxce4goe4OPXvRJG9xbB8We0+hNntPoTZ7T6E2Z0nKKkSTKoQIx/59hggwdC4RjOFkta04RhZNuGaEucewNDXiVtvyv10Dq7T6E2e0+hNntPoTZ7TFBwOPw96oa3r9jHM7UPMOfbr1gvwcSjtVdJt3XTfqbbhIae29kjIjPkUCBEJs9p9CbPafQmz2n0JrH2NfTCAYV9OyJHs6hlL/X4dZEWm5viN8F3OYmjjwZAFPa5ZYpgE/BhRVkyhCKezxZ7T6E2e0+hNZTA0n52MRKLndYLhlecfdXAJIkKqc+NBY88p95TmcP3CNMHxZ7T6E2e0+hNntPm4FciL7tCS4hP1IQsA+I6V5JR49Vp8MZbMJLTeh5cGdm42397clD5zwmz2n0Js9p9CbPaes7G3MEd9+dQuFMcGeYW69e3bW/3c9Y8E+jRYQCb5z8Ychch7Cd+NocdfaE2e0+hNntPoTZ7KMX6fO33wqqyWs5rc9zWCFX8fEQJna6y6Ph/OCUiXrzDxht/EEgRhkPxKFSxk7WdBPqa+Ig8+viIPPq767CG+dYae33JkVDMfDtqf9nCVmJxb/ftRtxWGhZclsjhijgN+VC2hGmz+kTeTnTqgnKA9uZET3Rs9p9CbPafQmz2mKPPD7gVOVfPOyMGhkHbaCH//y+r1CFNPh7KIUmwfB6k7eYt5stYuIsGscSTX+8Hh9tI6VUqIRGD4s9p9CbPafQmsfXIGFqavW4sLb8f9rIhRuYnDjHxH6dXFblglV2AjBoWOnVtMuw25YifVK70ep2j//SuCsvkCPJ2Wi2J59fEQefXxEHnwAuAQJxZ6ZG+O7N2mlPzY8m02W/hDH7CxtQKTcqE+TdUIoYz34FonSvCZeH8JW98Rg7Hn+KeCb2wfFntPoTZ7T6Cyo/YNH5CasddYlpgmjJqyJ9Q9ELRXde7iFm+YVK3yP6zrawu46pSTFrB+I6ccRC9QmRA8Z5JbB8We0+hNntPmxSuItxydxLhucE8uXDc415cuGewTy5cNzjXly4bnGvLlw3OCdwy2yEmx40fFbtRT2eLPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0Js9p9CbPafQmz2n0JrAAAP7++DQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAb4Gj1aDEkIygCCMrs/wAA2kIZ/VPniE4tEgOxcGAdnCUI0v+d1WymVQTn1yNA3uC//LM8SviCoPRPeiF/0xgB8eStpfluV/zlfrlqU/O3DJNSiTy3uSP/No/nDMX99KAcddos52iKosQKXz3D4UuVdORFMuyih+vwwwu/lVD/9flNo7RScrYHq+6zaZC/HEKWDU98a/Y+xnO5Rf4AUNqV7GVIAAC5IwwvXfxgs5i27nFRPFCODbW49Hh5ZgywDOqV62WJXZMv+cU+Hr27X6Jy+D2pjSdayq5NL8jQI//+DX7ZYxKr9Epsn1fn8Or8VMP99+1VZJ/683VSLrg54SxytpGM4jh/bdfmybVWzNJ2XcLfmgpCC7v4iW7vA2ELHz9Gvk27fFxFKdVuY/Npb+Lc/Ey3mUCI9b0D3008r4ub1JSPM7Zo0GAAyygyoUmdc2CANpgRaqQaTzpA48ZbFvj/d3iVxK9PIQrPXHfewk4osHg9b5frMul5dpxX4TiB6bJbsQPaSY0Xj9mji5keGB1IkIY658XyY7vzDO1iCzaBTkZf46uBuoflN8uPg5o6ouCFadvh4tXhou+QpM5l2N4NIIZzbxGtD2e1Us8IHb1qPfQkZ5H/xXyXJkMpwZD0ts1i/HuWFntSFHfoAAB7XiaU8U0eidY4KkP8PePw61v/bo30mmJIyCobpojMJ6EXGg5pwbUtlfifYwt9YBg1PlAKSQhKcuWVxnGHIKhOwwYZAJbawblPKLR4g3DLJFcbF6GvXBm3j2uXsgfawAOb9pfNaLMKiIpQ61+OKq0cEmjmsh5OVVqizjF6fFw97jJ/nzMvuwO3PJZsB7w//Rqh+0R5LmABCduPxiswml8RxBj2VVueSs9Ph29673QvjEzNaJmHZxCi6EmCL+s2x78kUAKmw3t9kLNyuUx1AKc5l+g48aCn0ecogyDCigYn7n8veW+QLwfHEDDFvFCVTPvJqXRlSJGHSk1CICmSOk8EVhDyUyA4rNxT3lhPqkFzW/eaHvgitm0JlLWpfvMOjqHqNJKjYA9zDsAAbujA0R36vj2UneWGKOv/XCTn5RRMXeUWpAQK556vfO5PgkWbFhyOUKivBE48/z582QGg/YeqVmbOv+wCJw3eNmWrK0/eID82njVTCvfgJJIEgLAatxzIQCRWWvw4mVccSdcOxnzMIq2A6pQ48C4JiPKqNZDieBd88ZJ2ic0JRXoRpcZi3TinhABqTUNydqOIn71q/wAgRTcftIAABY/lpLvwDyUJDM1trA4irTTfggPQfxL8hrfx79COHUKfKh4A+UwbnT2H4SLkvS3seaCwnMumNe8/B7Cuw7HYKXxaBtZaCUb4AsP5sxK3pMs2SEHoYe1k78/Rshz/ojn+HQBDoblrLgoVkZP5EirBULbza3sVQTtdrc1zfDiNUz3O+acbYiAdFkEfa3n3Ex3E4Bu+NerJjdFaGrAGG42G/o3zeI6r8KzR7409ie0o00CEAAbK5gnsxFfVqzbCHnlZW/jZ0j/HKw/hwG3R3W6vOGgS6H5zR5uHXmAbdF/hUG8QiH1hxvQE73NVpBXq/3EAd9NXAmT0ZVdjI5+WPiUqPA6AuzMaJ/pC4HC3CU4PDiuieBoA8H64PtTzzjbYfaciVjKXtci5GgD1+ZmrIQHE7CgTKtFU+hJt8iOFUSBcUHpH1WubkBBr96lOAmm9PbDyWMW+wN39TJNjKb/x2SrAmpmdxONBxQwkIekabdfTMRw7RAMmBihAAAP/5TXDlm+BtGBKeppbbcNHHs2JPdsgpZPsH9cQfw8JPhmkIoqwGxf+nbLN+LZpcRhYTDdrKShGVQV6WokObf8y8LqYoM1OT1i8G6ZUrt7YdJ53IzZRgzLyRyzyzGGoP1UkeiSW9MPFfNIWojg9T5l0F1TP14bN1vjo3lz4beft6NzDntGTqdX6gMxPWOw/+Qv1LaafzSEShCKJ/VS4gL+bZNQ7KopAAfkfDAC+zN9w/rC6vvy4KNC2SDcVs88dNilL2eR1RDm3hrArgALHOCrHMFmmt9jE8B/GH6v3KJIXhAJvIuys4L3l94Tqr63Vv8x7cWd4+HH4TATh36zwfYsyq7gRndJ1EuRf8s2wRmhOKBqnajgOzVG3qhR6faTd/OMoRN5QgN9ArqpW8t60dk/7bP8FfYoTcWbG2n9z6YlyjuZ5CDbJiltNNC7MmY/MrQ2r9o7b9AZyaq84WbFhf/B8nV890r04ONBrBHAoEZK3n3Va8m6A+Pc/dr59j4ls/0f2a7a6dCdmFKMAKxj90QAAs/z/91fZC8rQTKX4PBjAXW33v/eWjrOdPE383IFTYUXwP8fxUFxNK9Eu6BfJYM39lfzCmH8IWaAlw3ppdKVRRR+Njt/pDsp3rLcEl8YBfG0HJ35ejqk8zYAjFM+h1gs37IeSunEmlmgiwdy93lVt9b5H2c7PrMyImOasqbYwiWQs5SCmwutxEdfiBwmJeNW+ZEaj81PsXfot/8nU70jj44EMwq1odwiV33z2cRjBVRXHsYNevQ02Y0c4hFSnebXJlIxrEmtS3NP49jYBvEVRgSAKj8cf5XwcBsxMhbOLdT+al8pJfeWuUG3f12SfDGHTJ7dvSSqAz2C7fEcLAciMvuStFEAVtuK41TTNdWefsvooxlYMnd9yFVYCJHaCmPzlZci8wq3j67yZHxk39TyNJbaVutBxLamMC5xNiiDhwlH6q0TbZzGT6SxpfWu2jP7vG8efL3gk4inrqI6Ym9Q+FIoRB+AEVXE+llVRbiwdAymAgANvF/LyrTcuV7PRtTWZ/WSoJXICvqxoT4SiL52t9FIRV05op4oqmkKGeFjAzoAUhmzAmLjilNVC33unXFAAbvw9H/oKH/r7o3taDctCF/XkicMwPk5XQnFmXQjTaOqUrjFs76Q56vZL4U/eE84uJ/CJ4n7Vl3qd0r3UcYE/Breg8W2+DQz8OH2gqhQkxR4OM05sFS/bA8ZKHrSkhSiVfXyKICmnFEJ9RQIvVFrzu7e21uT8cYRM2Ma/3VMmfK2e3sz7yYiTe3L0z34Cb0BraRJ7Vbk533qdBIsL8NzNFZtZI69BIYMyUm6Sp66EqHe7J5aulWp53nmKR3Qk9RETRIqm0iRtxZgYxfQdtONM2UsTJv/2729tbHQOZsMRewdCg10AAFz+afBqu+JL8A7rItAPRK6FZw7u+jcoGz2dSi+ToBZif1QoqCszyx+KftCok8XDeGA6O5sOwdkaD3vtpRLDER9t8UFADl02qFGF6SmMgw4CakNzwbyW8KcNQJlUMMy0Tvr/c9lkJVh7WDc791jlm9gnAJp6PROO4Ah0rTs6cNYAnBoHugCDugVpHG27RAADEeJDUAR+/jZmWrnCKeuqOv/r3QWpmWgydj9SkJUe7XoEwDsMluJLhgkliK8yVpntRCshLrtHmdYGwa/aiTFgNZMD54xMLNzCu4ALtQXBA8AFhXOEu0tU//p0MnCrcxUO/hRbtiODCUgaEgeYTtX5WBPw6FOiyyHjIoNC6cwplDqyEgORyi/eI2/9n9CHVu1pddXgD6YhhJvwR5SIZ6CkNvkpjTSSaZoMz/uMwcAlMweT2Nx5sNHyL8qNp3FaDEAv2dPZ9fWtHU8VGfmZPgAc/TG8lY64mBRS8yQmwD8r4DxbeKrnrSLDVCrs4qhrgoboOGlQ9hpNyiLmjy1/3lsdSS6+wjAFCFLRj3y52TAgAAufwqupOPUx070NnDkvOn8z+LHVyRuBUStBl+n8+r0JTpTLDOqp3PLEYKhU4nY0fChCIC1smtkXqmTFiyD9X7j5kiltKlbu8FMgetcryqa230bP3ULqUv87CE0lEFhy7RupN9RZ1+XxnneuOHSMnDGQtyrxkTIDkG167N0SKWqKjYAkFNuCLabk8IwnxruBQmRW4AY0gAMd8Q/968YI6PtBHSo2nB33+POCXhE67DOz6Q6i/6ywHwO5TeXxqg7cKHCxep/o1/AYT9oRjSkjKw99Z6lAAmx1s+CraYx38uAnZ/rGGZ+8uSioZXrnYDI85tkfIG184C2SvWXyBg6gXjdNab8wH0AXA2fL78KUGPiva0bSN9klYwHeFUz63SSuicA+e+QaiYmpVqrQIw9ibX3ZZGlw/QwI8p7ta/BRS+SL29a4MUKLzs+Ghd35iVjK+PVw85Kl6H+8iitJdjPay/0A4eNF8akS7EImb87zJOBQPnMRAEpvlooCaKQtHmAdxL9nj4UTKr32LqyeIiOOMmh8J7jKqBXQ5ZE+xDbKgA0fzT4YDXe1dUbCkp5F95cNupR876PD7Go/evYO+LkOolKswqVVaSjEfsQtPk/IepxDGMHO+J0jcxLPoN9Oei03PAKLY+vJ//ijp+o8QCg1Lu7CExafG91gVAxTI0okAYHIAKIa19Fw7a0EPO64QlcSVGjwZkMnKA6eGiXxMNdZ3nq9NiRSYWu0Ij24FJViooACCgm7C5UCUy321i2eESgLazotHlOKPNBAsN98BPXE/27tWELrWZA1Ewmpdc/rFwhIg7CTHnKcjXbOAr9DR9rmgIzI+vrUAvmPd4+qmQdTGoJw7XkPGzjadjmjTmVA/tJj76JPIFdnA2tMxCsuvkLw8u3AcQi67h2JG/k2aOjmpxzBAdjkPNpTLDCX/9DDrqdn0CKfsI6HT1xxPW7nKjhXYJfiuARadD2qkbPyemcWeyVjTM7Ub+xlCDjEAecJ6iIpJIqfL77A9EtiEE4qemZZdrIrDPnjTELYJ2TFnJT+C/p1byRi04vVpg+qUoEvLAivdmp6f1MLcsMbMCPdQ5oIxDez6HdH+Xy4BZ+dfGVCubvjHtVIWWai113EFgi+vko44zb9GWCdWWSmXTlzk+K++owYykGrgJz2ovbVlsTZRJdxjibGcwS/SBfSVl9rLt61vCiKk/QDONg/KFVfrQ+gWOgwLpXcWIQiT4LEVhRNV3JBj8YEwJmb0vnzbWip6syyymrjuhx70z3DsP/R2oK8SHV5OGHeZk9kljRlWQh9Y98lrtqvHXAuBP+wy4lwpgIwFh0l6Z5ZE6x++Mi1t1XPRnhwKDw+TeKo+RP4voQ8riPs6SjAegh6CHoIPIKHH9CuPXdWrreOJwS6VElN7bDtRb6oVAe3GNBQSaHRLsOb3kd7YKPFnqpCmPdDE2IBrv5gkFyc0MIrEwYRbogPFe4FoBbovXXaLMur/b2Ljf5wlv+YPHgAGpqVw3nlZ6zQuuUlSB5UPSJTC7s7D0J7zIB4KmM/875qPMc8pE6kEe5jTGve3UJt2xanA3DxPnHFDVxfMGXfvin+R/nadxnD9XJt5L3W7woIggm46G3XAbLLMDQ60zAQbwuW6z1z32sK3qTLzNWHUEKBgt04QsJDqTrSIE4aZiZfhkYeH/dGORgb7W92VTVf9f4YlR1H8kBzd+I2DokITwBLO8nREFUbcgwY0agpMv6lQ0+mKg/MhbkjNRAIexjyqwtZeo5DzHfZmbF+ky3GWdz2loo84FtBFq8Y7J+zKnQ+cCbs5t90ZTPnXby8KHE6oSUeMg0eEw0WFcfZnxpRFuG01WrzSspn/ZRrArd3gAus9LlB1o/5T28ZlHgs2wdYQ4Y+ncxq7h2JRoWIqfIkRdKCwKS8rcjGAxoJwAx/OkHTcFOJrj3CODCzu26zzrKSv4IPDwdNocNcxyNkMe0FBbu8EZqJ+fWaBwyVZloL4ZTadnozmTJEFK9QhSg78BiETU5b/VfQuPRxBqUab419YNVsNOXgVNrZwV1I5ATBSZhBNyxVKwrajZxhaKQP7eIWewS1BuYrshEZ0rdk954ss59Em51WrBZZskOPGkZcckEwjRsogKye5f3UKP8dRCRIK6vlO/xcjnzJOjBt9LbCZUNIag2PRwkgR28/n8Jzd/8gDuveEemDPw771cMPNaZ9aPtxF3nMOlDrp3xEKKPwzH7v3NeEhUXpXsXA+I8wDSBM1nPgSK+pcarDLtPAAr5AjIbohDHik6i47ncQpvv8y69aJUXTv0vacTV9NxKnd6agsLOqpT9ELRxq8jc8BbxXnVJ9jt1cm53z6Saoq+X4GMO06r6Emp7d8yrbqMsuudW6Kp/gbNd+wmxHXfru4vewC6r0jGNyN+e30au28577fpzdLrMUAHCU/LfGYbWecRL3pbnsS/+YJuw+LL1bmr0hGwD/iMMpUmF+AwxFDSbTR0ZoLZIUSRAK40+P35eAvtWTZzxs+wUPv0h1xb4AUj03uYTpj+T9NdtFAg7jpoRDe25oIKDBdGLmCWhJuzGvidGTTPdYOek4KmjQMAlAcY4fX9R7HOVsgaOZIlVTlXKvZ/ha0cjCSLEY98nMGLqJMxXtY+jkODtpyxcGsYr35ZZBCh5ZLLNZgyUENFbJrO/JC3Ae5law1gZLHnyyxCODUT4TfPj9kfBibi+Gzci7YcHT3GrgZo543WBcATkIr8CEkboszqHIHPi/svKlTnSWqAhHg7h13JxN+zsoEgJJd18XP14ae66IJ4xHPWxrn8cxhGCqTl1L86TM/omuAJGSwbTlo5OIhH+xdqGk3hs2YDY4nNL1Rwn5o4+wXEo0FBV1/61x8ImRfJxzp8mbaz1HueSiMM6JUpcos//WZtVftScxDNutw/l0mX6de7Gm6vW8Yu7HZjp/r7seQ3FFwN0MdzEY6tP9rdatJpNkrONUuGocSrQVELWgvtLz80qIhchOYn75wC8kXbDTfKfYvq+6yVtsS8d9byAZZ53K9pJk2v/P50breE/jarBjlRD+NSWpyMeCfkBCBC5H0Qh6HDPLfp9F63sp42PoQ2fL+7R2JIXNB5fxGMP++MrPF6grD0mY1I0muEvP6AQSYjSGK88M2xgo/8639ZUt8Ey8LxjycDKbgsdpnlnNVGr2WecP1USRJ4Wlu+wqRt5jDmaPtiQFKCDUYX+LnOMcBq2I/Ee5ueSbbDTVGF9ET8jIccdvvwlTh9++cfQ9adqpCZTJ7O3bEmjVockAy1s46BSSEoSh+pdCRxcMSDhlw1MmSe3ooTcRj3JFXwmhHJRrJEa/zFTMQLmdVWm0xTL1pNcSFjNsWXD9spZJMZbc8rv4+PYrL1GBEope7A00DmhgsGoa/WrayoOCSEtixtqO9VsNxyB98C5iBaobPFFAvvo8+oDsjzNHX+DaymV+2mWV2jy0N/05lWVbxAPQzu5G6TquDL/U8fqRVd2Ck/AdFgrOYSbiw/nhjTrPJ0s42/vPTkjMqqbs5tno9MZ3j4fzdE71sK4J1Wo+FkJoJxV8zdLozX1yA8XwTzLYYoZOL7HeQpxhQeqO/41498wTv8fh0D+qMuILIh2G0qH3d47TgNtKTM18yvd67GvPGc7d9b7Q4rNW3xCB7zpbDrCsZfJ+8q+IxNY4v4m67pWJFWhJ71FgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" alt="PRISM Logo" width="80" height="80" style="object-fit: contain;" />
+              </div>
+              <!-- PRISM Text -->
+              <h1 class="text-white text-5xl font-bold tracking-wider font-krona">PRISM</h1>
+            </div>
+            
+            <!-- Divider Line -->
+            <div class="w-72 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent mb-6" style="animation: textReveal 0.8s ease-out 0.5s both;"></div>
+            
+            <!-- Tagline -->
+            <p class="text-violet-300/90 text-lg font-medium tracking-wide font-krona mb-12" style="animation: textReveal 0.8s ease-out 0.6s both;">See The Full Spectrum</p>
+            
+            <!-- Sub-tagline -->
+            <div class="text-center mb-10" style="animation: textReveal 0.8s ease-out 0.8s both;">
+              <p class="text-white/60 text-base font-light">understand any event</p>
+              <p class="text-white/60 text-base font-light">from every angle<span class="dots-animate"></span></p>
+            </div>
+            
+            <!-- Loading Bar -->
+            <div class="w-48" style="animation: textReveal 0.8s ease-out 1s both;">
+              <div class="h-1 bg-white/10 rounded-full overflow-hidden">
+                <div class="loading-bar h-full rounded-full" style="animation: progressFill 3s ease-out forwards;"></div>
+              </div>
+              <p class="text-white/30 text-xs text-center mt-3">Loading experience...</p>
+            </div>
+          </div>
+          
+          <!-- Version -->
+          <p class="absolute bottom-8 text-white/20 text-xs">v1.0 • Columbia SIPA Capstone</p>
+        </div>
+      `;
+    }
+
+    // ==================== BOTTOM NAV ====================
+    function renderBottomNav() {
+      const tabs = [
+        { id: 'home', icon: icons.home, label: 'Home' },
+        { id: 'explore', icon: icons.globe, label: 'Explore' },
+        { id: 'upload', icon: icons.upload, label: 'Upload' },
+        { id: 'bookmark', icon: icons.bookmark, label: 'Saved' },
+        { id: 'profile', icon: icons.user, label: 'Profile' }
+      ];
+      return `
+        <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-slate-200 px-2 py-2 z-50" style="max-width:390px;margin:0 auto;">
+          <div class="flex justify-around items-center">
+            ${tabs.map(t => `
+              <button onclick="switchTab('${t.id}')" class="flex flex-col items-center py-2 px-3 rounded-xl transition-all ${activeTab === t.id ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}">
+                ${t.icon}<span class="text-xs mt-1">${t.label}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ==================== HOME ====================
+    function renderHome() {
+      const today = new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="px-5 pt-6 pb-4 bg-gradient-to-b from-slate-50 to-white flex justify-between items-start">
+            <div>
+              <p class="text-slate-500 text-sm">Good Morning,</p>
+              <p class="text-xl font-bold text-slate-800">Welcome back! 👋</p>
+              <p class="text-slate-400 text-xs mt-1">${today}</p>
+            </div>
+            <button onclick="openSearch()" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-600 border border-slate-100">${icons.search}</button>
+          </div>
+          
+          <div class="px-5 py-4">
+            <button onclick="switchTab('upload')" class="w-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white py-4 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all card-hover">
+              <span class="text-lg font-semibold">Fact Check Now</span>
+              <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">${icons.arrowUp}</div>
+            </button>
+          </div>
+          
+          <div class="bg-gradient-to-b from-slate-800 to-slate-900 px-5 py-6">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-white text-lg font-semibold">Trending Now 🔥</h2>
+              <button onclick="switchTab('explore')" class="text-violet-400 text-sm hover:text-violet-300 transition-colors">See All</button>
+            </div>
+            <div class="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
+              ${demoData.trendingEvents.map((ev, i) => `
+                <div onclick="showEventDetail('${ev.id}')" class="flex-shrink-0 w-44 bg-slate-700/50 rounded-xl overflow-hidden cursor-pointer card-hover" style="animation: fadeInUp 0.5s ease-out ${0.1 * i}s both;">
+                  <div class="h-28 bg-gradient-to-br ${ev.color} overflow-hidden relative">
+                    ${ev.image ? `<img src="${ev.image}" alt="${ev.title}" class="w-full h-full object-cover"/>` : ''}
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  </div>
+                  <div class="p-3">
+                    <h3 class="text-white text-sm font-medium line-clamp-2">${ev.title}</h3>
+                    <p class="text-violet-400 text-xs mt-1">${ev.category}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          
+          <div class="px-5 py-6">
+            <h2 class="text-slate-800 text-lg font-semibold mb-4">Featured Event</h2>
+            <div onclick="showEventDetail('uhc')" class="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 rounded-2xl p-5 cursor-pointer card-hover shadow-xl">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="px-2 py-1 bg-amber-400/20 text-amber-300 rounded text-xs font-medium">🔴 ONGOING</span>
+                <span class="px-2 py-1 bg-white/10 text-white/70 rounded text-xs">${demoData.events.uhc.stats.sources} sources</span>
+              </div>
+              <h3 class="text-white text-xl font-bold mb-2">${demoData.events.uhc.title}</h3>
+              <p class="text-white/70 text-sm line-clamp-2 mb-4">${demoData.events.uhc.summary}</p>
+              <div class="flex gap-6 pt-4 border-t border-white/20">
+                <div class="text-center"><p class="text-white text-2xl font-bold">${demoData.events.uhc.stats.sources}</p><p class="text-white/50 text-xs">Sources</p></div>
+                <div class="text-center"><p class="text-white text-2xl font-bold">${demoData.events.uhc.stats.factChecks}</p><p class="text-white/50 text-xs">Fact-Checks</p></div>
+                <div class="text-center"><p class="text-white text-2xl font-bold">4</p><p class="text-white/50 text-xs">Chapters</p></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="px-5 pb-4">
+            <h2 class="text-slate-800 text-lg font-semibold mb-4">Quick Access</h2>
+            <div class="grid grid-cols-2 gap-3">
+              ${['russiaUkraine', 'aiBubble'].map(id => {
+                const ev = demoData.events[id];
+                return `
+                  <div onclick="showEventDetail('${id}')" class="bg-white border border-slate-200 rounded-xl p-4 cursor-pointer card-hover">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br ${ev.color} mb-3"></div>
+                    <h3 class="font-semibold text-slate-800 text-sm mb-1 line-clamp-2">${ev.shortTitle}</h3>
+                    <p class="text-xs text-slate-500">${ev.stats.sources} sources</p>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+        ${isSearchOpen ? renderSearchOverlay() : ''}
+      `;
+    }
+
+    // ==================== SEARCH OVERLAY ====================
+    function renderSearchOverlay() {
+      const results = searchQuery ? demoData.exploreEvents.filter(e => 
+        e.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        e.category.toLowerCase().includes(searchQuery.toLowerCase())
+      ) : [];
+      return `
+        <div class="fixed inset-0 bg-black/60 modal-backdrop z-50 animate-fadeIn" onclick="closeSearch()">
+          <div class="bg-white rounded-b-3xl p-5" style="animation: slideDown 0.3s ease-out;" onclick="event.stopPropagation()">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="flex-1 flex items-center bg-slate-100 rounded-xl px-4 py-3">
+                <span class="text-slate-400 mr-2">${icons.search}</span>
+                <input type="text" placeholder="Search events, topics..." class="flex-1 bg-transparent outline-none text-slate-800" value="${searchQuery}" oninput="updateSearch(this.value)" autofocus/>
+                ${searchQuery ? `<button onclick="updateSearch('')" class="text-slate-400 hover:text-slate-600">${icons.x}</button>` : ''}
+              </div>
+              <button onclick="closeSearch()" class="text-violet-600 font-medium">Cancel</button>
+            </div>
+            ${searchQuery ? `
+              <div class="max-h-80 overflow-y-auto">
+                ${results.length > 0 ? results.map(ev => `
+                  <div onclick="showEventDetail('${ev.id}'); closeSearch();" class="flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-all">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br ${ev.color} overflow-hidden flex-shrink-0">${ev.image ? `<img src="${ev.image}" class="w-full h-full object-cover"/>` : ''}</div>
+                    <div class="flex-1"><p class="font-medium text-slate-800">${ev.title}</p><p class="text-sm text-slate-500">${ev.category} • ${ev.sources} sources</p></div>
+                    <span class="text-slate-400">${icons.chevronRight}</span>
+                  </div>
+                `).join('') : `<div class="text-center py-12"><p class="text-slate-400">No results found for "${searchQuery}"</p></div>`}
+              </div>
+            ` : `
+              <div class="py-4">
+                <p class="text-xs text-slate-400 uppercase tracking-wider mb-3">Suggested Topics</p>
+                <div class="flex flex-wrap gap-2">
+                  ${['Healthcare', 'AI', 'Ukraine', 'Technology', 'Politics'].map(term => `
+                    <button onclick="updateSearch('${term}')" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-full text-sm hover:bg-violet-100 hover:text-violet-600 transition-all">${term}</button>
+                  `).join('')}
+                </div>
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
+    // ==================== EXPLORE ====================
+    function renderExplore() {
+      const filteredEvents = selectedCategory === 'All' ? demoData.exploreEvents : demoData.exploreEvents.filter(e => e.category === selectedCategory);
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="px-5 pt-6 pb-4">
+            <div class="flex justify-between items-center mb-4">
+              <h1 class="text-2xl font-bold text-slate-800">Explore</h1>
+              <button onclick="openSearch()" class="p-2 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all">${icons.search}</button>
+            </div>
+            <div class="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+              ${demoData.categories.map(cat => `
+                <button onclick="filterCategory('${cat}')" class="px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${selectedCategory === cat ? 'bg-violet-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${cat}</button>
+              `).join('')}
+            </div>
+          </div>
+          <div class="px-5 space-y-4">
+            ${filteredEvents.length > 0 ? filteredEvents.map((ev, i) => `
+              <div onclick="showEventDetail('${ev.id}')" class="bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer card-hover" style="animation: fadeInUp 0.4s ease-out ${0.05 * i}s both;">
+                <div class="h-40 bg-gradient-to-br ${ev.color} overflow-hidden relative">
+                  ${ev.image ? `<img src="${ev.image}" alt="${ev.title}" class="w-full h-full object-cover"/>` : ''}
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                </div>
+                <div class="p-4">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-1 bg-violet-100 text-violet-700 rounded text-xs font-medium">${ev.category}</span>
+                    <span class="text-xs text-slate-400">${ev.sources} sources</span>
+                  </div>
+                  <h3 class="font-semibold text-slate-800">${ev.title}</h3>
+                </div>
+              </div>
+            `).join('') : `<div class="text-center py-16"><p class="text-slate-400">No events in this category</p></div>`}
+          </div>
+        </div>
+        ${renderBottomNav()}
+        ${isSearchOpen ? renderSearchOverlay() : ''}
+      `;
+    }
+
+    // ==================== UPLOAD ====================
+    function renderUpload() {
+      if (uploadState === 'analyzing') return renderUploadAnalyzing();
+      if (uploadState === 'complete') return renderUploadComplete();
+      return `
+        <div class="min-h-screen gradient-prism pb-24 animate-fadeIn">
+          <div class="px-6 pt-8 pb-6">
+            <div onclick="startUpload()" class="upload-frame aspect-[3/4] bg-white/5 rounded-2xl flex items-center justify-center relative overflow-hidden">
+              <div class="corner-bl"></div><div class="corner-br"></div>
+              <div class="text-center text-white/60">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-white/10 flex items-center justify-center">${icons.image.replace('width="24"', 'width="32"').replace('height="24"', 'height="32"')}</div>
+                <p class="font-medium">Tap to upload</p>
+                <p class="text-sm mt-1 text-white/40">screenshot, image, or paste a link</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-t-3xl px-6 py-8 shadow-2xl">
+            <div class="text-center mb-6">
+              <h2 class="text-3xl font-bold text-slate-800 leading-tight">
+                Upload.<br/>
+                <span class="text-violet-600">Analyse.</span><br/>
+                <span class="text-indigo-600">Illuminate.</span>
+              </h2>
+              <p class="text-slate-500 text-sm mt-3">Get instant fact-checks from 47+ sources</p>
+            </div>
+            <button onclick="startUpload()" class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white py-4 px-6 rounded-full flex items-center justify-center gap-3 font-semibold shadow-lg hover:shadow-xl transition-all">
+              Fact Check Now ${icons.arrowUp}
+            </button>
+            <div class="flex justify-center gap-8 mt-8">
+              ${[
+                { icon: icons.image, label: 'Image', color: 'blue' },
+                { icon: icons.link, label: 'Link', color: 'green' },
+                { icon: icons.file, label: 'File', color: 'purple' }
+              ].map(item => `
+                <button onclick="startUpload()" class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-slate-50 transition-all group">
+                  <div class="w-14 h-14 bg-${item.color}-100 rounded-xl flex items-center justify-center text-${item.color}-600 group-hover:scale-110 transition-transform">${item.icon}</div>
+                  <span class="text-xs text-slate-600">${item.label}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    function renderUploadAnalyzing() {
+      return `
+        <div class="min-h-screen gradient-prism pb-24 animate-fadeIn flex flex-col">
+          <div class="flex-1 flex flex-col items-center justify-center px-6">
+            <div class="w-28 h-28 rounded-full bg-white/10 flex items-center justify-center mb-8 relative">
+              <div class="absolute inset-0 rounded-full border-4 border-white/20 border-t-white animate-spin"></div>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            </div>
+            <h2 class="text-white text-2xl font-bold mb-2">Analyzing Content</h2>
+            <p class="text-white/60 text-center mb-8">Cross-referencing with trusted sources...</p>
+            <div class="w-full max-w-xs">
+              <div class="h-2 bg-white/10 rounded-full overflow-hidden mb-3">
+                <div class="analyzing-bar h-full rounded-full"></div>
+              </div>
+              <div class="space-y-2 text-sm">
+                <p class="text-green-400 flex items-center gap-2"><span>✓</span> Content uploaded</p>
+                <p class="text-green-400 flex items-center gap-2"><span>✓</span> 3 claims identified</p>
+                <p class="text-white/60 flex items-center gap-2"><span class="animate-pulse">●</span> Verifying claims...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    function renderUploadComplete() {
+      return `
+        <div class="min-h-screen bg-slate-50 pb-24 animate-fadeIn">
+          <div class="gradient-prism px-6 pt-10 pb-16">
+            <div class="text-center">
+              <div class="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-4" style="animation: scaleIn 0.5s ease-out;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+              </div>
+              <h2 class="text-white text-2xl font-bold mb-2">Analysis Complete!</h2>
+              <p class="text-white/60">Found 3 claims to verify</p>
+            </div>
+          </div>
+          <div class="px-5 -mt-8 space-y-3">
+            ${demoData.events.uhc.factChecks.slice(0, 3).map((fc, i) => `
+              <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100" style="animation: fadeInUp 0.4s ease-out ${0.1 * i}s both;">
+                <div class="flex items-start gap-3">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: ${fc.color}20">
+                    <span class="text-sm font-bold" style="color: ${fc.color}">${fc.verdict === 'TRUE' ? '✓' : fc.verdict === 'FALSE' ? '✗' : '?'}</span>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-slate-800 mb-2">"${fc.claim}"</p>
+                    <span class="inline-block px-2 py-1 rounded text-xs font-bold text-white" style="background-color: ${fc.color}">${fc.verdict}</span>
+                    <p class="text-xs text-slate-500 mt-2">${fc.explanation}</p>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+            <div class="pt-4 space-y-3">
+              <button onclick="showEventDetail('uhc')" class="w-full bg-violet-600 text-white py-4 rounded-xl font-semibold hover:bg-violet-700 transition-all shadow-lg">View Full Event Context</button>
+              <button onclick="resetUpload()" class="w-full bg-white text-slate-600 py-3 rounded-xl font-medium border border-slate-200 hover:bg-slate-50 transition-all">Analyze Another</button>
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ==================== BOOKMARK ====================
+    function renderBookmark() {
+      const bookmarked = demoData.bookmarkedEvents.filter(e => e.bookmarked);
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="px-5 pt-6 pb-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-slate-800">Saved</h1>
+            <button onclick="toggleEditBookmarks()" class="text-violet-600 font-medium">${isEditingBookmarks ? 'Done' : 'Edit'}</button>
+          </div>
+          <div class="px-5">
+            ${bookmarked.length > 0 ? bookmarked.map(ev => `
+              <div class="flex items-center gap-4 py-4 border-b border-slate-100">
+                <div onclick="showEventDetail('${ev.id}')" class="flex-1 cursor-pointer">
+                  <h3 class="font-medium text-slate-800 mb-1">${ev.title}</h3>
+                  <p class="text-sm text-slate-500">${ev.category}</p>
+                </div>
+                <div class="w-16 h-14 rounded-lg overflow-hidden bg-slate-100">${ev.image ? `<img src="${ev.image}" class="w-full h-full object-cover"/>` : ''}</div>
+                <button onclick="toggleBookmark('${ev.id}')" class="p-2 hover:bg-slate-100 rounded-full transition-all">
+                  <span class="text-violet-600">${icons.bookmarkFilled}</span>
+                </button>
+              </div>
+            `).join('') : `
+              <div class="text-center py-16">
+                <div class="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">${icons.bookmark.replace('width="20"', 'width="32"').replace('height="20"', 'height="32"')}</div>
+                <p class="text-slate-600 font-medium">No saved events yet</p>
+                <p class="text-slate-400 text-sm mt-1">Bookmark events to find them here</p>
+                <button onclick="switchTab('explore')" class="mt-4 px-6 py-2 bg-violet-600 text-white rounded-full text-sm font-medium">Explore Events</button>
+              </div>
+            `}
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ==================== PROFILE ====================
+    function renderProfile() {
+      const p = demoData.userProfile;
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="gradient-prism px-5 pt-8 pb-16">
+            <div class="flex items-center gap-4">
+              <div class="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center text-white text-2xl font-bold border-2 border-white/30">${p.name.charAt(0)}</div>
+              <div>
+                <h1 class="text-xl font-bold text-white">${p.name}</h1>
+                <p class="text-white/60 text-sm">Level ${p.level} • ${p.factChecks} fact-checks</p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  ${p.badges.map(b => `<span class="flex items-center gap-1 px-2 py-1 bg-white/20 text-white/90 rounded-full text-xs"><span>${b.icon}</span> ${b.name}</span>`).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="px-5 -mt-8">
+            <div class="bg-white rounded-2xl p-5 shadow-lg border border-slate-100 mb-4">
+              <div class="grid grid-cols-3 gap-4 text-center">
+                <div><p class="text-2xl font-bold text-violet-600">${p.diversityScore}</p><p class="text-xs text-slate-500">Diversity Score</p></div>
+                <div><p class="text-2xl font-bold text-slate-800">${p.factChecks}</p><p class="text-xs text-slate-500">Fact-Checks</p></div>
+                <div><p class="text-2xl font-bold text-slate-800">${p.level}</p><p class="text-xs text-slate-500">Level</p></div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-slate-100">
+                <div class="flex justify-between text-sm mb-2">
+                  <span class="text-blue-600 font-medium">Progressive ${p.politicalBalance.progressive}%</span>
+                  <span class="text-red-600 font-medium">Conservative ${p.politicalBalance.conservative}%</span>
+                </div>
+                <div class="h-3 bg-slate-100 rounded-full overflow-hidden flex">
+                  <div class="bg-blue-500 transition-all" style="width:${p.politicalBalance.progressive}%"></div>
+                  <div class="bg-red-500 transition-all" style="width:${p.politicalBalance.conservative}%"></div>
+                </div>
+                <p class="text-center text-green-600 text-sm mt-2 font-medium">✓ BALANCED</p>
+              </div>
+            </div>
+            
+            <div class="space-y-1">
+              <p class="text-xs text-slate-400 uppercase tracking-wider px-1 mb-2">My Archive</p>
+              ${[
+                { screen: 'ongoingTopics', icon: icons.folder, iconColor: 'text-violet-600', label: 'Ongoing Topics', count: demoData.ongoingTopics.length },
+                { screen: 'resolvedTopics', icon: icons.checkCircle, iconColor: 'text-green-600', label: 'Resolved Topics', count: demoData.resolvedTopics.length }
+              ].map(item => `
+                <button onclick="navigateTo('${item.screen}')" class="w-full flex items-center justify-between py-4 px-3 hover:bg-slate-50 rounded-xl transition-all">
+                  <span class="flex items-center gap-3"><span class="${item.iconColor}">${item.icon}</span><span class="text-slate-700">${item.label}</span></span>
+                  <span class="flex items-center gap-2"><span class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">${item.count}</span>${icons.chevronRight}</span>
+                </button>
+              `).join('')}
+              
+              <p class="text-xs text-slate-400 uppercase tracking-wider px-1 mb-2 mt-4">My Progress</p>
+              ${[
+                { screen: 'informationDiets', icon: icons.pieChart, iconColor: 'text-blue-600', label: 'Information Diets' },
+                { screen: 'weeklyChallenges', icon: icons.target, iconColor: 'text-amber-600', label: 'Weekly Challenges', badge: `${demoData.challenges.active.length} active` }
+              ].map(item => `
+                <button onclick="navigateTo('${item.screen}')" class="w-full flex items-center justify-between py-4 px-3 hover:bg-slate-50 rounded-xl transition-all">
+                  <span class="flex items-center gap-3"><span class="${item.iconColor}">${item.icon}</span><span class="text-slate-700">${item.label}</span></span>
+                  <span class="flex items-center gap-2">${item.badge ? `<span class="text-xs text-amber-600 font-medium">${item.badge}</span>` : ''}${icons.chevronRight}</span>
+                </button>
+              `).join('')}
+              
+              <p class="text-xs text-slate-400 uppercase tracking-wider px-1 mb-2 mt-4">Settings & About</p>
+              ${[
+                { screen: 'settings', icon: icons.settings, iconColor: 'text-slate-600', label: 'Settings' },
+                { screen: 'privacy', icon: icons.lock, iconColor: 'text-slate-600', label: 'Privacy' },
+                { screen: 'aboutUs', icon: icons.info, iconColor: 'text-violet-600', label: 'About PRISM' }
+              ].map(item => `
+                <button onclick="navigateTo('${item.screen}')" class="w-full flex items-center justify-between py-4 px-3 hover:bg-slate-50 rounded-xl transition-all">
+                  <span class="flex items-center gap-3"><span class="${item.iconColor}">${item.icon}</span><span class="text-slate-700">${item.label}</span></span>
+                  ${icons.chevronRight}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ==================== SETTINGS PAGE ====================
+    function renderSettings() {
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3"><button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button><h1 class="text-lg font-semibold text-slate-800">Settings</h1></div>
+          </div>
+          <div class="px-5 py-4">
+            <div class="mb-6">
+              <p class="text-xs text-slate-400 uppercase tracking-wider mb-3">Appearance</p>
+              <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                <div class="flex items-center justify-between p-4 border-b border-slate-100">
+                  <div class="flex items-center gap-3"><span class="text-slate-600">${icons.moon}</span><span class="text-slate-700">Dark Mode</span></div>
+                  <div onclick="toggleSetting('darkMode')" class="toggle-switch ${demoData.settings.darkMode ? 'active' : ''}"></div>
+                </div>
+                <div class="flex items-center justify-between p-4">
+                  <div class="flex items-center gap-3"><span class="text-slate-600">${icons.type}</span><span class="text-slate-700">Text Size</span></div>
+                  <span class="text-slate-500 text-sm">Medium</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-6">
+              <p class="text-xs text-slate-400 uppercase tracking-wider mb-3">Notifications</p>
+              <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                <div class="flex items-center justify-between p-4 border-b border-slate-100">
+                  <div><p class="text-slate-700">Breaking News</p><p class="text-xs text-slate-400">Get alerted for major developments</p></div>
+                  <div onclick="toggleSetting('breaking')" class="toggle-switch ${demoData.settings.notifications.breaking ? 'active' : ''}"></div>
+                </div>
+                <div class="flex items-center justify-between p-4 border-b border-slate-100">
+                  <div><p class="text-slate-700">Fact-Check Updates</p><p class="text-xs text-slate-400">New verifications on saved events</p></div>
+                  <div onclick="toggleSetting('factChecks')" class="toggle-switch ${demoData.settings.notifications.factChecks ? 'active' : ''}"></div>
+                </div>
+                <div class="flex items-center justify-between p-4">
+                  <div><p class="text-slate-700">Weekly Digest</p><p class="text-xs text-slate-400">Summary of your information diet</p></div>
+                  <div onclick="toggleSetting('weekly')" class="toggle-switch ${demoData.settings.notifications.weekly ? 'active' : ''}"></div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-6">
+              <p class="text-xs text-slate-400 uppercase tracking-wider mb-3">Data & Privacy</p>
+              <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                <button class="w-full flex items-center justify-between p-4 border-b border-slate-100 text-left hover:bg-slate-50">
+                  <span class="text-slate-700">Clear Search History</span>
+                  ${icons.chevronRight}
+                </button>
+                <button class="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50">
+                  <span class="text-slate-700">Download My Data</span>
+                  ${icons.chevronRight}
+                </button>
+              </div>
+            </div>
+            
+            <button class="w-full py-3 text-red-500 font-medium hover:bg-red-50 rounded-xl transition-all">Sign Out</button>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ==================== SUB PAGES ====================
+    function renderOngoingTopics() {
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3"><button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button><h1 class="text-lg font-semibold text-slate-800">Ongoing Topics</h1></div>
+          </div>
+          <div class="px-5 py-4 space-y-3">
+            ${demoData.ongoingTopics.map(t => `
+              <div onclick="showEventDetail('${t.id}')" class="bg-white border border-slate-200 rounded-xl p-4 cursor-pointer card-hover">
+                <div class="flex justify-between items-start mb-2">
+                  <span class="px-2 py-1 bg-amber-100 text-amber-700 rounded text-xs font-medium">ONGOING</span>
+                  <span class="text-xs text-slate-400">${t.lastUpdate}</span>
+                </div>
+                <h3 class="font-semibold text-slate-800 mb-1">${t.title}</h3>
+                <p class="text-sm text-slate-500 mb-3">${t.category}</p>
+                <div class="flex items-center gap-2"><div class="flex-1 progress-bar"><div class="progress-fill bg-violet-500" style="width:${t.progress}%"></div></div><span class="text-xs text-slate-500">${t.progress}%</span></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    function renderResolvedTopics() {
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3"><button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button><h1 class="text-lg font-semibold text-slate-800">Resolved Topics</h1></div>
+          </div>
+          <div class="px-5 py-4 space-y-3">
+            ${demoData.resolvedTopics.map(t => `
+              <div class="bg-white border border-slate-200 rounded-xl p-4">
+                <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium inline-flex items-center gap-1">${icons.check} RESOLVED</span>
+                <h3 class="font-semibold text-slate-800 mt-2 mb-1">${t.title}</h3>
+                <p class="text-sm text-slate-500 mb-2">${t.category}</p>
+                <div class="flex justify-between text-xs text-slate-400"><span>Resolved: ${t.resolvedDate}</span><span>${t.sourcesRead} sources read</span></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    function renderInformationDiets() {
+      const p = demoData.userProfile;
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3"><button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button><h1 class="text-lg font-semibold text-slate-800">Information Diets</h1></div>
+          </div>
+          <div class="px-5 py-4">
+            <div class="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-2xl p-5 mb-4 text-white">
+              <div class="flex justify-between items-start">
+                <div><p class="text-white/70 text-sm">Diversity Score</p><p class="text-4xl font-bold">${p.diversityScore}<span class="text-lg">/100</span></p></div>
+                <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-300 rounded-full text-xs">${icons.trendingUp} +${p.monthlyStats.diversityChange}</span>
+              </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4">
+              <h3 class="font-semibold text-slate-800 mb-4">Source Types</h3>
+              ${Object.entries(p.sourceTypes).map(([key, val]) => `
+                <div class="mb-3 last:mb-0">
+                  <div class="flex justify-between text-sm mb-1"><span class="capitalize">${key.replace(/([A-Z])/g, ' $1')}</span><span class="font-medium">${val}%</span></div>
+                  <div class="progress-bar"><div class="progress-fill ${key === 'legacy' ? 'bg-blue-500' : key === 'social' ? 'bg-pink-500' : 'bg-amber-500'}" style="width:${val}%"></div></div>
+                </div>
+              `).join('')}
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-4">
+              <h3 class="font-semibold text-slate-800 mb-4">This Month</h3>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="text-center p-3 bg-slate-50 rounded-lg"><p class="text-2xl font-bold text-violet-600">${p.monthlyStats.eventsExplored}</p><p class="text-xs text-slate-500">Events</p></div>
+                <div class="text-center p-3 bg-slate-50 rounded-lg"><p class="text-2xl font-bold text-blue-600">${p.monthlyStats.sourcesRead}</p><p class="text-xs text-slate-500">Sources</p></div>
+                <div class="text-center p-3 bg-slate-50 rounded-lg"><p class="text-2xl font-bold text-green-600">${p.monthlyStats.factChecksViewed}</p><p class="text-xs text-slate-500">Fact-Checks</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    function renderWeeklyChallenges() {
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3"><button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button><h1 class="text-lg font-semibold text-slate-800">Weekly Challenges</h1></div>
+          </div>
+          <div class="px-5 py-4">
+            <p class="text-xs text-slate-400 uppercase tracking-wider mb-3">Active Challenges</p>
+            <div class="space-y-3 mb-6">
+              ${demoData.challenges.active.map(c => `
+                <div class="bg-white border border-slate-200 rounded-xl p-4">
+                  <div class="flex justify-between items-start mb-2"><h3 class="font-semibold text-slate-800">${c.name}</h3><span class="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded-full">${c.reward}</span></div>
+                  <p class="text-sm text-slate-500 mb-3">${c.description}</p>
+                  <div class="flex items-center gap-3"><div class="flex-1 progress-bar"><div class="progress-fill bg-amber-500" style="width:${(c.current/c.target)*100}%"></div></div><span class="text-sm font-medium text-slate-700">${c.current}/${c.target}</span></div>
+                </div>
+              `).join('')}
+            </div>
+            <p class="text-xs text-slate-400 uppercase tracking-wider mb-3">Completed</p>
+            <div class="space-y-3">
+              ${demoData.challenges.completed.map(c => `
+                <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+                  <div class="flex justify-between items-start mb-1"><h3 class="font-semibold text-green-800 flex items-center gap-2">${icons.check} ${c.name}</h3><span class="text-xs text-green-600">${c.reward}</span></div>
+                  <p class="text-sm text-green-600">${c.description}</p>
+                  <p class="text-xs text-green-500 mt-1">Completed: ${c.completedDate}</p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    function renderPrivacy() {
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3"><button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button><h1 class="text-lg font-semibold text-slate-800">Privacy</h1></div>
+          </div>
+          <div class="px-5 py-6 space-y-6">
+            <p class="text-slate-600 leading-relaxed">PRISM is committed to protecting user privacy in accordance with GDPR and international data protection laws.</p>
+            <div><h3 class="font-semibold text-slate-800 mb-2">What We Collect</h3><p class="text-slate-600 text-sm">Basic account info (email, username) and voluntary preferences.</p></div>
+            <div><h3 class="font-semibold text-slate-800 mb-2">What We Don't Collect</h3><p class="text-slate-600 text-sm">Political affiliation, biometric data, financial info, contact lists, or real-time location.</p></div>
+            <div><h3 class="font-semibold text-slate-800 mb-2">Data Sharing</h3><p class="text-slate-600 text-sm">We never sell data to advertisers or political campaigns.</p></div>
+            <div class="bg-slate-100 rounded-xl p-4"><p class="font-medium text-slate-800">Contact</p><p class="text-slate-600 text-sm">Data Protection Officer</p><a href="mailto:privacy@prism-news.com" class="text-violet-600 text-sm">privacy@prism-news.com</a></div>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    function renderAboutUs() {
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3"><button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full">${icons.arrowLeft}</button><h1 class="text-lg font-semibold text-slate-800">About PRISM</h1></div>
+          </div>
+          <div class="px-5 py-6">
+            <div class="text-center mb-8">
+              <div class="inline-block mb-4">
+                <svg width="60" height="60" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="aboutGrad" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#EC4899"/><stop offset="50%" stop-color="#8B5CF6"/><stop offset="100%" stop-color="#06B6D4"/></linearGradient></defs><path d="M50 10 L90 80 L10 80 Z" fill="url(#aboutGrad)"/></svg>
+              </div>
+              <h2 class="text-2xl font-bold text-slate-800">PRISM</h2>
+              <p class="text-violet-600 font-medium">See The Full Spectrum</p>
+            </div>
+            <div class="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-2xl p-5 mb-4 text-white">
+              <h3 class="font-semibold mb-2">Our Mission</h3>
+              <p class="text-white/90 text-sm leading-relaxed">Combat information fragmentation and polarization by helping users explore news from multiple perspectives, fostering critical thinking and informed decision-making.</p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4">
+              <h3 class="font-semibold text-slate-800 mb-4">Core Values</h3>
+              <div class="space-y-4">
+                ${[
+                  { emoji: '🔍', title: 'Transparency', desc: 'We show perspectives, not tell you what to think' },
+                  { emoji: '💪', title: 'Empowerment', desc: 'Tools for informed decision-making' },
+                  { emoji: '🌈', title: 'Diversity', desc: 'The full spectrum of coverage' }
+                ].map(v => `
+                  <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center flex-shrink-0">${v.emoji}</div>
+                    <div><p class="font-medium text-slate-800">${v.title}</p><p class="text-sm text-slate-500">${v.desc}</p></div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            <p class="text-center text-slate-400 text-xs">PRISM v1.0 • Columbia SIPA Capstone 2024</p>
+          </div>
+        </div>
+        ${renderBottomNav()}
+      `;
+    }
+
+    // ==================== EVENT DETAIL ====================
+    function renderEventDetail() {
+      const event = demoData.events[currentEventId] || demoData.events.uhc;
+      const views = ['overview', 'spectrum', 'journey', 'timeline', 'factcheck', 'questions'];
+      return `
+        <div class="pb-24 animate-fadeIn">
+          <div class="sticky top-0 bg-white/95 backdrop-blur-lg z-40 px-4 py-3 border-b border-slate-200">
+            <div class="flex items-center gap-3">
+              <button onclick="goBack()" class="p-2 hover:bg-slate-100 rounded-full transition-all">${icons.arrowLeft}</button>
+              <div class="flex-1 min-w-0"><h1 class="text-lg font-semibold text-slate-800 truncate">${event.shortTitle}</h1><p class="text-xs text-slate-500">${event.stats.sources} sources • ${event.stats.factChecks} fact-checks</p></div>
+              <button onclick="showToast('Saved to bookmarks')" class="p-2 hover:bg-slate-100 rounded-full text-violet-600">${icons.bookmarkFilled}</button>
+            </div>
+          </div>
+          <div id="tabContainer" class="flex gap-2 px-4 py-3 overflow-x-auto bg-slate-50 hide-scrollbar">
+            ${views.map(v => `<button id="tab-${v}" onclick="setEventView('${v}')" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${eventDetailView === v ? 'bg-violet-600 text-white shadow-lg' : 'bg-white text-slate-600 hover:bg-slate-100'}">${v === 'overview' ? 'Overview' : v === 'spectrum' ? 'Sources' : v === 'journey' ? 'Journey' : v === 'timeline' ? 'Timeline' : v === 'factcheck' ? 'Fact-Checks' : 'Questions'}</button>`).join('')}
+          </div>
+          ${eventDetailView === 'overview' ? renderOverview(event) : ''}
+          ${eventDetailView === 'spectrum' ? renderSpectrum(event) : ''}
+          ${eventDetailView === 'journey' ? renderJourney(event) : ''}
+          ${eventDetailView === 'timeline' ? renderTimeline(event) : ''}
+          ${eventDetailView === 'factcheck' ? renderFactCheck(event) : ''}
+          ${eventDetailView === 'questions' ? renderQuestions(event) : ''}
+        </div>
+        ${renderBottomNav()}
+        ${selectedSource ? renderSourceModal(event) : ''}
+        ${showQuestionModal ? renderQuestionModal() : ''}
+      `;
+    }
+
+    function renderOverview(event) {
+      return `
+        <div class="px-4 py-4">
+          <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 mb-4">
+            <span class="inline-block px-2 py-1 bg-amber-500/20 text-amber-400 rounded text-xs font-medium mb-3">${event.status.toUpperCase()}</span>
+            <h2 class="text-white text-xl font-bold mb-3">${event.title}</h2>
+            <p class="text-slate-300 text-sm leading-relaxed">${event.summary}</p>
+            <div class="flex flex-wrap gap-2 mt-4">${event.categories.map(c => `<span class="px-3 py-1 bg-white/10 text-white/80 rounded-full text-xs">${c}</span>`).join('')}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="bg-violet-50 rounded-xl p-4 text-center"><p class="text-2xl font-bold text-violet-600">${event.stats.sources}</p><p class="text-xs text-violet-600/70">Sources</p></div>
+            <div class="bg-green-50 rounded-xl p-4 text-center"><p class="text-2xl font-bold text-green-600">${event.stats.factChecks}</p><p class="text-xs text-green-600/70">Fact-Checks</p></div>
+            <div class="bg-blue-50 rounded-xl p-4 text-center"><p class="text-2xl font-bold text-blue-600">${event.chapters?.length || 4}</p><p class="text-xs text-blue-600/70">Chapters</p></div>
+          </div>
+          <h3 class="text-slate-800 font-semibold mb-3">Key Perspectives</h3>
+          <div class="space-y-2">
+            ${[{label:'Progressive View',color:'bg-blue-500',text:'Systemic issues and reform needed'},{label:'Centrist View',color:'bg-slate-500',text:'Complex situation requiring nuance'},{label:'Conservative View',color:'bg-red-500',text:'Law and order, institutional stability'}].map(p => `
+              <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl"><div class="w-1 h-10 ${p.color} rounded-full"></div><div><p class="text-sm font-medium text-slate-700">${p.label}</p><p class="text-xs text-slate-500">${p.text}</p></div></div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSpectrum(event) {
+      return `
+        <div class="px-4 py-4">
+          <div class="mb-3 text-center"><p class="text-xs text-slate-500">Credibility (Y) vs Political Lean (X)</p></div>
+          <div class="relative bg-slate-100 rounded-2xl p-4 mb-4" style="height:300px;">
+            <div class="absolute inset-4">
+              ${[0,25,50,75].map(y => `<div class="absolute w-full border-t ${y===0?'border-slate-300':'border-slate-200'}" style="top:${y}%;"></div>`).join('')}
+              <div class="absolute h-full border-l border-slate-300" style="left:50%;"></div>
+              <span class="absolute text-xs text-slate-400" style="left:-20px;top:-5px;">100%</span>
+              <span class="absolute text-xs text-slate-400" style="left:-20px;top:47%;">70%</span>
+              <span class="absolute text-xs text-blue-500" style="left:0;bottom:-18px;">-10</span>
+              <span class="absolute text-xs text-slate-400" style="left:50%;transform:translateX(-50%);bottom:-18px;">0</span>
+              <span class="absolute text-xs text-red-500" style="right:0;bottom:-18px;">+10</span>
+              ${event.sources.map(s => {
+                const x = ((s.lean + 10) / 20) * 100;
+                const y = 100 - ((s.credibility - 55) / 45) * 100;
+                return `<div onclick="showSourceDetail('${s.name}')" class="spectrum-dot absolute w-4 h-4 rounded-full border-2 border-white shadow-md" style="left:calc(${x}% - 8px);top:calc(${y}% - 8px);background-color:${s.color};" title="${s.name}"></div>`;
+              }).join('')}
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 flex justify-between text-xs px-4" style="bottom:-30px;"><span class="text-blue-600 font-medium">← Left</span><span class="text-red-600 font-medium">Right →</span></div>
+          </div>
+          <div class="bg-white rounded-xl p-4 border border-slate-200 mt-8">
+            <p class="font-semibold text-slate-800 mb-3">Tap any dot to see source details</p>
+            <div class="grid grid-cols-3 gap-2 text-xs">
+              ${[{c:'bg-blue-600',l:'Left'},{c:'bg-blue-400',l:'Center-Left'},{c:'bg-slate-500',l:'Center'},{c:'bg-orange-500',l:'Center-Right'},{c:'bg-red-600',l:'Right'}].map(i => `<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full ${i.c}"></div><span class="text-slate-600">${i.l}</span></div>`).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSourceModal(event) {
+      const source = event.sources.find(s => s.name === selectedSource);
+      if (!source) return '';
+      return `
+        <div class="fixed inset-0 bg-black/50 modal-backdrop z-50 flex items-end justify-center" onclick="closeSourceModal()">
+          <div class="bg-white rounded-t-3xl w-full max-w-md p-6 animate-slideUp" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-start mb-4">
+              <div><h3 class="text-xl font-bold text-slate-800">${source.name}</h3><p class="text-sm text-slate-500">${source.type}</p></div>
+              <button onclick="closeSourceModal()" class="p-2 hover:bg-slate-100 rounded-full">${icons.x}</button>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div class="bg-slate-100 rounded-xl p-3 text-center"><p class="text-2xl font-bold" style="color:${source.color}">${source.lean > 0 ? '+' : ''}${source.lean}</p><p class="text-xs text-slate-500">Political Lean</p></div>
+              <div class="bg-slate-100 rounded-xl p-3 text-center"><p class="text-2xl font-bold text-slate-800">${source.credibility}%</p><p class="text-xs text-slate-500">Credibility</p></div>
+            </div>
+            <div class="mb-4"><p class="font-semibold text-slate-700 mb-1">Framing on This Event</p><p class="text-sm text-slate-600">${source.framing}</p></div>
+            <a href="${source.url}" target="_blank" class="flex items-center justify-between p-4 bg-violet-50 rounded-xl hover:bg-violet-100 transition-all">
+              <div><p class="font-medium text-violet-700">Visit Source</p><p class="text-xs text-violet-500 truncate" style="max-width:220px;">${source.url}</p></div>
+              <span class="text-violet-600">${icons.externalLink}</span>
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderJourney(event) {
+      return `
+        <div class="px-4 py-4">
+          <div class="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl p-4 mb-4 text-white">
+            <h3 class="font-semibold mb-1">Information Flow</h3>
+            <p class="text-sm text-white/80">Track how this story evolved and spread</p>
+          </div>
+          <div class="relative">
+            <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-violet-500 via-blue-500 to-slate-300"></div>
+            ${event.journey.map(j => `
+              <div class="relative flex gap-4 pb-5">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center z-10 ${j.type==='origin'?'bg-red-500':j.type==='viral'?'bg-orange-500':j.type==='breaking'?'bg-green-500':j.type==='ongoing'?'bg-amber-500':'bg-blue-500'} text-white text-xs font-bold shadow-lg">${j.sources}</div>
+                <div class="flex-1 bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+                  <div class="flex justify-between items-start mb-1">
+                    <span class="text-xs font-medium px-2 py-0.5 rounded ${j.type==='origin'?'bg-red-100 text-red-700':j.type==='viral'?'bg-orange-100 text-orange-700':j.type==='breaking'?'bg-green-100 text-green-700':j.type==='ongoing'?'bg-amber-100 text-amber-700':'bg-blue-100 text-blue-700'}">${j.type.toUpperCase()}</span>
+                    <span class="text-xs text-slate-400">${j.reach}</span>
+                  </div>
+                  <p class="font-medium text-slate-800 text-sm">${j.event}</p>
+                  <p class="text-xs text-slate-500 mt-1">${j.date}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTimeline(event) {
+      return `
+        <div class="px-4 py-4">
+          ${event.chapters.map(ch => `
+            <div class="mb-3">
+              <button onclick="toggleChapter('${ch.id}')" class="w-full flex items-center justify-between p-4 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center ${ch.status==='ongoing'?'bg-amber-100 text-amber-600':'bg-green-100 text-green-600'}">${ch.status==='ongoing'?icons.clock:icons.check}</div>
+                  <div class="text-left"><p class="font-semibold text-slate-800">${ch.title}</p><p class="text-xs text-slate-500">${ch.date}</p></div>
+                </div>
+                ${expandedChapter===ch.id?icons.chevronUp:icons.chevronDown}
+              </button>
+              ${expandedChapter===ch.id?`
+                <div class="mt-2 ml-6 border-l-2 border-violet-200 pl-4 space-y-3">
+                  ${ch.events.map(ev => `
+                    <div class="relative">
+                      <div class="absolute -left-6 top-2 w-3 h-3 bg-violet-500 rounded-full border-2 border-white"></div>
+                      <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+                        <span class="text-xs text-violet-600 font-medium">${ev.time}</span>
+                        <p class="font-medium text-slate-800 text-sm">${ev.title}</p>
+                        <p class="text-xs text-slate-500 mt-1">${ev.summary}</p>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              `:''}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderFactCheck(event) {
+      return `
+        <div class="px-4 py-4">
+          <div class="mb-4 p-4 bg-slate-100 rounded-xl">
+            <div class="flex items-center gap-2 mb-1"><span class="text-violet-600">${icons.shield}</span><span class="font-semibold text-slate-800">Verified Claims</span></div>
+            <p class="text-sm text-slate-600">${event.factChecks.length} claims fact-checked from multiple sources</p>
+          </div>
+          <div class="space-y-3">
+            ${event.factChecks.map(fc => `
+              <div class="bg-white border border-slate-200 rounded-xl p-4">
+                <p class="text-sm font-medium text-slate-800 mb-3">"${fc.claim}"</p>
+                <div class="flex items-center gap-2 mb-2"><span class="px-3 py-1 rounded-full text-xs font-bold text-white" style="background-color:${fc.color}">${fc.verdict}</span></div>
+                <p class="text-xs text-slate-600 mb-3">${fc.explanation}</p>
+                <div class="flex flex-wrap gap-1">${fc.sources.map(s => `<span class="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded-full">${s}</span>`).join('')}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQuestions(event) {
+      return `
+        <div class="px-4 py-4">
+          <div class="bg-slate-100 rounded-xl p-4 mb-4">
+            <div class="flex items-center gap-2 mb-1"><span class="text-violet-600">${icons.messageCircle}</span><span class="font-semibold text-slate-800">Community Questions</span></div>
+            <p class="text-sm text-slate-600">Questions get investigated when enough people want to know</p>
+          </div>
+          <button onclick="openQuestionModal()" class="w-full mb-4 p-4 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-violet-400 hover:text-violet-600 transition-all flex items-center justify-center gap-2">${icons.plus} Ask a question</button>
+          <div class="space-y-3">
+            ${event.questions.map(q => `
+              <div class="bg-white border border-slate-200 rounded-xl p-4">
+                <div class="flex justify-between items-start mb-2">
+                  <span class="text-xs px-2 py-1 rounded-full ${q.status==='answered'?'bg-green-100 text-green-700':q.status==='investigating'?'bg-amber-100 text-amber-700':'bg-slate-100 text-slate-600'}">${q.status==='answered'?'✓ ANSWERED':q.status==='investigating'?'🔍 INVESTIGATING':'OPEN'}</span>
+                  <span class="text-xs text-slate-400">${q.daysAgo}d ago</span>
+                </div>
+                <p class="text-sm font-medium text-slate-800 mb-3">"${q.text}"</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-slate-500">@${q.askedBy}</span>
+                  <button onclick="showToast('Upvoted!')" class="flex items-center gap-1 px-3 py-1.5 rounded-full ${q.upvotes>100?'bg-violet-100 text-violet-700':'bg-slate-100 text-slate-600'} hover:bg-violet-200 transition-all">${icons.thumbsUp}<span class="text-sm font-medium">${q.upvotes}</span></button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQuestionModal() {
+      return `
+        <div class="fixed inset-0 bg-black/50 modal-backdrop z-50 flex items-end justify-center" onclick="closeQuestionModal()">
+          <div class="bg-white rounded-t-3xl w-full max-w-md p-6 animate-slideUp" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-bold text-slate-800">Ask a Question</h3>
+              <button onclick="closeQuestionModal()" class="p-2 hover:bg-slate-100 rounded-full">${icons.x}</button>
+            </div>
+            <textarea id="questionInput" rows="4" placeholder="What would you like to know about this event?" class="w-full p-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none mb-4"></textarea>
+            <button onclick="submitQuestion()" class="w-full bg-violet-600 text-white py-3 rounded-xl font-semibold hover:bg-violet-700 transition-all flex items-center justify-center gap-2">${icons.send} Submit Question</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // ==================== EVENT HANDLERS ====================
+    function switchTab(tab) { activeTab = tab; currentScreen = tab; isSearchOpen = false; render(); }
+    function showEventDetail(id) { currentEventId = id || 'uhc'; currentScreen = 'eventDetail'; eventDetailView = 'overview'; expandedChapter = 'ch1'; isSearchOpen = false; render(); }
+    function goBack() { currentScreen = activeTab; render(); }
+    function setEventView(view) { 
+      eventDetailView = view; 
+      render(); 
+      // 선택된 탭 버튼이 화면에 보이도록 스크롤
+      setTimeout(() => {
+        const selectedTab = document.getElementById(`tab-${view}`);
+        if (selectedTab) {
+          selectedTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+      }, 50);
+    }
+    function toggleChapter(id) { expandedChapter = expandedChapter === id ? null : id; render(); }
+    function toggleBookmark(id) { const ev = demoData.bookmarkedEvents.find(e => e.id === id); if (ev) { ev.bookmarked = !ev.bookmarked; showToast(ev.bookmarked ? 'Added to saved' : 'Removed'); render(); } }
+    function toggleEditBookmarks() { isEditingBookmarks = !isEditingBookmarks; render(); }
+    function showSourceDetail(name) { selectedSource = name; render(); }
+    function closeSourceModal() { selectedSource = null; render(); }
+    function navigateTo(screen) { currentScreen = screen; render(); }
+    function filterCategory(cat) { selectedCategory = cat; render(); }
+    function openSearch() { isSearchOpen = true; searchQuery = ''; render(); setTimeout(() => document.querySelector('input')?.focus(), 100); }
+    function closeSearch() { isSearchOpen = false; searchQuery = ''; render(); }
+    function updateSearch(val) { searchQuery = val; render(); }
+    function startUpload() { uploadState = 'analyzing'; render(); setTimeout(() => { uploadState = 'complete'; render(); }, 3500); }
+    function resetUpload() { uploadState = 'idle'; render(); }
+    function openQuestionModal() { showQuestionModal = true; render(); }
+    function closeQuestionModal() { showQuestionModal = false; render(); }
+    function submitQuestion() { const input = document.getElementById('questionInput'); if (input?.value.trim()) { showToast('Question submitted!'); closeQuestionModal(); } }
+    function toggleSetting(key) { if (key === 'darkMode') demoData.settings.darkMode = !demoData.settings.darkMode; else if (demoData.settings.notifications[key] !== undefined) demoData.settings.notifications[key] = !demoData.settings.notifications[key]; showToast('Setting updated'); render(); }
+
+    // ==================== MAIN RENDER ====================
+    function render() {
+      const app = document.getElementById('app');
+      const screens = {
+        splash: renderSplash, home: renderHome, explore: renderExplore, upload: renderUpload,
+        bookmark: renderBookmark, profile: renderProfile, eventDetail: renderEventDetail,
+        ongoingTopics: renderOngoingTopics, resolvedTopics: renderResolvedTopics,
+        informationDiets: renderInformationDiets, weeklyChallenges: renderWeeklyChallenges,
+        settings: renderSettings, privacy: renderPrivacy, aboutUs: renderAboutUs
+      };
+      app.innerHTML = (screens[currentScreen] || renderHome)();
+    }
+
+    // ==================== INIT ====================
+    render();
+    setTimeout(() => { currentScreen = 'home'; activeTab = 'home'; render(); }, 4000);
+  </script>
+</body>
+</html>
